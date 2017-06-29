@@ -60,8 +60,6 @@ namespace ProjectHaystack.Auth
     static AuthScheme()
     {
       registry["scram"] = new ScramScheme();
-//		registry["hmac"] = new HmacScheme();
-//		registry["folio2"] = new Folio2Scheme();
       registry["basic"] = new BasicScheme();
     }
 
