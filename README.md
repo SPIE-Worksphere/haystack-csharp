@@ -2,7 +2,7 @@
 
 ### What is this repository for? ###
 
-Connecting to Haystack 3.0 via SCRAM mechanism.
+Connecting to Haystack 3.0 via SCRAM mechanism. Currently, this library provides a haystack client with a very low-level API for invoking ops and getting the result as a raw string. In the future we hope to add support for the Haystack data model as well.
 
 ### How do I get set up? ###
 
@@ -31,14 +31,8 @@ public static void Main(string[] args)
 }
 ```
 
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
 ### Who do I talk to? ###
 
 * Repo owner or admin
-* Other community or team contact
+* Other community or team contact. 
+* Consider posting questions on the [Project Haystack Forum](http://project-haystack.org/forum/topic)
