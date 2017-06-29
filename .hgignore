@@ -1,0 +1,18 @@
+# ignore files
+
+# globs in any directory
+syntax: glob
+
+.DS_Store
+Thumbs.db
+temp/
+doc/
+staging/
+haystack.jar
+
+# Visual Studio
+.vs/
+bin/
+obj/
+packages/
+

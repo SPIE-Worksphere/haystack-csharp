@@ -1,0 +1,12 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Int64 x:Key="/Default/Environment/SearchAndNavigation/DefaultOccurrencesGroupingIndex/@EntryValue">2</s:Int64>
+	<s:String x:Key="/Default/RunConfigs/Active/@EntryValue">2F0572E017266341A39D25C46F608A42</s:String>
+	<s:Boolean x:Key="/Default/RunConfigs/Config/=2F0572E017266341A39D25C46F608A42/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/RunConfigs/Config/=2F0572E017266341A39D25C46F608A42/Name/@EntryValue">ProjectHaystack</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=2F0572E017266341A39D25C46F608A42/ProjectGuid/@EntryValue">6E5D874E6EE0D642B12AE343325813C1</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=2F0572E017266341A39D25C46F608A42/Type/@EntryValue">project</s:String>
+	<s:Boolean x:Key="/Default/RunConfigs/Config/=6003999D2ABBD348806FBA5112A8C17D/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/RunConfigs/Config/=6003999D2ABBD348806FBA5112A8C17D/DefaultAction/@EntryValue">run</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=6003999D2ABBD348806FBA5112A8C17D/Name/@EntryValue">ProjectHaystack</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=6003999D2ABBD348806FBA5112A8C17D/ProjectGuid/@EntryValue">6E5D874E6EE0D642B12AE343325813C1</s:String>
+	<s:String x:Key="/Default/RunConfigs/Config/=6003999D2ABBD348806FBA5112A8C17D/Type/@EntryValue">project</s:String></wpf:ResourceDictionary>
