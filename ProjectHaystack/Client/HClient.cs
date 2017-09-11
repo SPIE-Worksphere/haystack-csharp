@@ -158,6 +158,7 @@ namespace ProjectHaystack.Client
       var c = OpenHttpConnection(builder.Uri, "GET");
       c = auth.Prepare(c);
       c.ContentType = mime == null ? "text/plain; charset=utf-8" : mime + " charset=utf-8";
+      c.Accept = c.ContentType;
       var resp = (HttpWebResponse) c.GetResponse();
       var sr = new StreamReader(resp.GetResponseStream());
       return sr.ReadToEnd();
@@ -177,6 +178,7 @@ namespace ProjectHaystack.Client
       c = auth.Prepare(c);
       c.Method = "POST";
       c.ContentType = mime + "; charset=utf-8";
+      c.Accept = c.ContentType;
       byte[] data = Encoding.ASCII.GetBytes(req);
       c.ContentLength = data.Length;
       Stream stream = c.GetRequestStream();
