@@ -142,7 +142,9 @@ namespace ProjectHaystack.Auth
       {
         var response = e.Response;
         var httpresp = (HttpWebResponse) response;
-        if ((int) httpresp.StatusCode == 401)
+        // 401 Unauthorized
+        // 500 Internal Server Error, for compatibility with nhaystack
+        if ((int) httpresp.StatusCode == 401 || (int)httpresp.StatusCode == 500)
         {
           return httpresp;
         }
@@ -267,7 +269,7 @@ namespace ProjectHaystack.Auth
 
     public void AddCookiesToHeaders(HttpWebRequest c)
     {
-      var cookies = (IList<string>) c.Headers;
+      var cookies = c.Headers;
       if (cookies == null || cookies.Count == 0)
       {
         return;

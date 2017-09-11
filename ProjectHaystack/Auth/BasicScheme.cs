@@ -44,6 +44,7 @@ namespace ProjectHaystack.Auth
       {
         // make another request to verify
         c = cx.Prepare(cx.OpenHttpConnection(cx.uri, "GET"));
+        c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
         HttpWebResponse resp2 = (HttpWebResponse)c.GetResponse();
         resp2.GetResponseHeader(headerKey);
         if ((int)resp2.StatusCode != 200)

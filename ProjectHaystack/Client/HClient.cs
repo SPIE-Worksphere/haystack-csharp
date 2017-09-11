@@ -72,7 +72,7 @@ namespace ProjectHaystack.Client
       }
 
       this.uri = uri;
-      this.auth = new AuthClientContext(uri + "About", user, pass);
+      this.auth = new AuthClientContext(uri + "about", user, pass);
     }
 
     //////////////////////////////////////////////////////////////////////////
