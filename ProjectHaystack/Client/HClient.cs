@@ -144,9 +144,10 @@ namespace ProjectHaystack.Client
     /// </summary>
     /// <param name="op">Given operation</param>
     /// <param name="params">Dictionary containing search parameters</param>
-    /// <param name="mime">Mime type</param>
+    /// <param name="mimeRequest">Mime type for ContentType header</param>
+    /// <param name="mimeResponse">Mime type for Accept header</param>
     /// <returns>Raw string of the result</returns>
-    public string GetString(string op, Dictionary<string, string> @params, string mime)
+    public string GetString(string op, Dictionary<string, string> @params, string mimeRequest = "text/zinc", string mimeResponse = "text/zinc")
     {
       var builder = new UriBuilder(this.uri + op);
       NameValueCollection queryString = HttpUtility.ParseQueryString(String.Empty);
@@ -157,8 +158,8 @@ namespace ProjectHaystack.Client
       builder.Query = queryString.ToString();
       var c = OpenHttpConnection(builder.Uri, "GET");
       c = auth.Prepare(c);
-      c.ContentType = mime == null ? "text/plain; charset=utf-8" : mime + " charset=utf-8";
-      c.Accept = c.ContentType;
+      c.ContentType = mimeRequest == null ? "text/plain; charset=utf-8" : mimeRequest + "; charset=utf-8";
+      c.Accept = mimeResponse == null ? "text/plain; charset=utf-8" : mimeResponse + "; charset=utf-8";
       var resp = (HttpWebResponse) c.GetResponse();
       var sr = new StreamReader(resp.GetResponseStream());
       return sr.ReadToEnd();
@@ -169,16 +170,17 @@ namespace ProjectHaystack.Client
     /// </summary>
     /// <param name="op">Given operation</param>
     /// <param name="req">Properly formatted request string</param>
-    /// <param name="mime">Mime type</param>
+    /// <param name="mimeRequest">Mime type for ContentType header</param>
+    /// <param name="mimeResponse">Mime type for Accept header</param>
     /// <returns>Raw string of the result</returns>
-    public string PostString(string op, string req, string mime = "text/zinc")
+    public string PostString(string op, string req, string mimeRequest = "text/zinc", string mimeResponse = "text/zinc")
     {
       var builder = new UriBuilder(this.uri + op);
       var c = OpenHttpConnection(builder.Uri, "POST");
       c = auth.Prepare(c);
       c.Method = "POST";
-      c.ContentType = mime + "; charset=utf-8";
-      c.Accept = c.ContentType;
+      c.ContentType = mimeRequest == null ? "text/plain; charset=utf-8" : mimeRequest + "; charset=utf-8";
+      c.Accept = mimeResponse == null ? "text/plain; charset=utf-8" : mimeResponse + "; charset=utf-8";
       byte[] data = Encoding.ASCII.GetBytes(req);
       c.ContentLength = data.Length;
       Stream stream = c.GetRequestStream();
