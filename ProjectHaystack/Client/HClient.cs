@@ -160,9 +160,13 @@ namespace ProjectHaystack.Client
       c = auth.Prepare(c);
       c.ContentType = mimeRequest == null ? "text/plain; charset=utf-8" : mimeRequest + "; charset=utf-8";
       c.Accept = mimeResponse == null ? "text/plain; charset=utf-8" : mimeResponse + "; charset=utf-8";
-      var resp = (HttpWebResponse) c.GetResponse();
-      var sr = new StreamReader(resp.GetResponseStream());
-      return sr.ReadToEnd();
+
+      using (var resp = (HttpWebResponse)c.GetResponse())
+      {
+        var sr = new StreamReader(resp.GetResponseStream());
+        return sr.ReadToEnd();
+      }
+   
     }
 
     /// <summary>
