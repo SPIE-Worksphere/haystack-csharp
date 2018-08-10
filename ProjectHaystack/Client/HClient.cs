@@ -223,7 +223,6 @@ namespace ProjectHaystack.Client
         c.AllowAutoRedirect = false;
         c.Timeout = connectTimeout;
         c.ReadWriteTimeout = readTimeout;
-        c = (HttpWebRequest)WebRequest.Create(url);
         return c;
       }
       catch (IOException e)
