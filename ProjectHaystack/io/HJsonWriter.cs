@@ -145,7 +145,7 @@ namespace ProjectHaystack.io
                 else
                     m_swOut.Write(", ");
                 string name = dict.getKeyAt(i, true);
-                HVal val = dict.get(name); 
+                HVal val = dict.get(name, false); 
                 m_swOut.Write(HStr.toCode(name));
                 m_swOut.Write(":");
                 writeVal(val);
