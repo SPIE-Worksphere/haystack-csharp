@@ -4,6 +4,7 @@
 //
 // History:
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
+//	 19 Sep 2018 Ian Davies Added to writeDictTags to call to HDict get the arguement to not check for NULL
 //
 using System;
 using System.IO;
@@ -145,7 +146,7 @@ namespace ProjectHaystack.io
                 else
                     m_swOut.Write(", ");
                 string name = dict.getKeyAt(i, true);
-                HVal val = dict.get(name); 
+                HVal val = dict.get(name, false); 
                 m_swOut.Write(HStr.toCode(name));
                 m_swOut.Write(":");
                 writeVal(val);
