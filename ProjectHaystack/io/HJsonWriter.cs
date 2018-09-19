@@ -4,6 +4,7 @@
 //
 // History:
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
+//	 19 Sep 2018 Ian Davies Added to writeDictTags to call to HDict get the arguement to not check for NULL
 //
 using System;
 using System.IO;
