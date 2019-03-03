@@ -69,9 +69,9 @@ namespace ProjectHaystackTest
         [TestMethod]
         public void testFormatDecimalWithDot()
         {
-            string defaultLanguage = Thread.CurrentThread.CurrentUICulture.ToString();
+            string defaultLanguage = CultureInfo.InvariantCulture.ToString();
             Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
-            verifyZinc(HNum.make(2.4), "2,4");
+            verifyZinc(HNum.make(2.4), "2.4");
             Thread.CurrentThread.CurrentCulture = new CultureInfo(defaultLanguage);
         }
 

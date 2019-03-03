@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace ProjectHaystack.io
 {
@@ -32,6 +33,7 @@ namespace ProjectHaystack.io
         private int m_cPeek;          // next char
         private bool m_bInitial;
         private const int m_iEOF = -1;
+        private NumberFormatInfo m_numberFormat = CultureInfo.InvariantCulture.NumberFormat;
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
@@ -200,7 +202,7 @@ namespace ProjectHaystack.io
 
         private HaystackToken num()
         {
-            string strDecNumSep = System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            string strDecNumSep = m_numberFormat.NumberDecimalSeparator;
             char cNumSep = '.';
             if (strDecNumSep.Length == 1)
                 cNumSep = strDecNumSep[0];
@@ -362,13 +364,13 @@ namespace ProjectHaystack.io
             {
                 if (unitIndex == 0)
                 {
-                    m_val = HNum.make(Double.Parse(s));
+                    m_val = HNum.make(Double.Parse(s, m_numberFormat));
                 }
                 else
                 {
                     string doubleStr = s.Substring(0, unitIndex);
                     string unitStr = s.Substring(unitIndex);
-                    m_val = HNum.make(Double.Parse(doubleStr), unitStr);
+                    m_val = HNum.make(Double.Parse(doubleStr, m_numberFormat), unitStr);
                 }
             }
             catch (Exception)
