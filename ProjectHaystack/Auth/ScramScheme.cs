@@ -9,16 +9,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Auth
 {
-  using Base64 = ProjectHaystack.Util.Base64;
-  using CryptoUtil = ProjectHaystack.Util.Pbkdf2;
-
-
   /// <summary>
   /// ScramScheme implements the salted challenge response authentication
   /// mechanism as defined in <a href="https://tools.ietf.org/html/rfc5802">RFC 5802</a>
@@ -30,12 +26,12 @@ namespace ProjectHaystack.Auth
     {
     }
 
-    public override AuthMsg OnClient(AuthClientContext cx, AuthMsg msg)
+    public override AuthMsg OnClient(IAuthClientContext cx, AuthMsg msg)
     {
       return ReferenceEquals(msg.Param("data", false), null) ? FirstMsg(cx, msg) : FinalMsg(cx, msg);
     }
 
-    private AuthMsg FirstMsg(AuthClientContext cx, AuthMsg msg)
+    private AuthMsg FirstMsg(IAuthClientContext cx, AuthMsg msg)
     {
       // construct client-first-message
       string c_nonce = GenNonce();
@@ -52,7 +48,7 @@ namespace ProjectHaystack.Auth
       return new AuthMsg(name, InjectHandshakeToken(msg, @params));
     }
 
-    private AuthMsg FinalMsg(AuthClientContext cx, AuthMsg msg)
+    private AuthMsg FinalMsg(IAuthClientContext cx, AuthMsg msg)
     {
       // Decode server-first-message
       string s1_msg = Base64.URI.decodeUTF8(msg.Param("data"));
@@ -61,21 +57,21 @@ namespace ProjectHaystack.Auth
       // c2-no-proof
       string cbind_input = gs2_header;
       string channel_binding = Base64.URI.EncodeUtf8(cbind_input);
-      string nonce = (string) data["r"];
+      string nonce = (string)data["r"];
       string c2_no_proof = "c=" + channel_binding + ",r=" + nonce;
 
       // proof
       string hash = msg.Param("hash");
-      string salt = (string) data["s"];
-      int iterations = int.Parse((string) data["i"]);
-      string c1_bare = (string) cx.stash["c1_bare"];
+      string salt = (string)data["s"];
+      int iterations = int.Parse((string)data["i"]);
+      string c1_bare = (string)cx.stash["c1_bare"];
       string authMsg = c1_bare + "," + s1_msg + "," + c2_no_proof;
 
       string c2_msg = null;
       try
       {
         sbyte[] saltedPassword = Pbk(hash, cx.pass, salt, iterations);
-        string clientProof = CreateClientProof(hash, saltedPassword, (sbyte[]) (Array) Encoding.UTF8.GetBytes(authMsg));
+        string clientProof = CreateClientProof(hash, saltedPassword, (sbyte[])(Array)Encoding.UTF8.GetBytes(authMsg));
         c2_msg = c2_no_proof + ",p= " + clientProof;
       }
       catch (Exception e)
@@ -142,9 +138,9 @@ namespace ProjectHaystack.Auth
         using (var hmac = new HMACSHA256())
         {
           var mine = new Pbkdf2(hmac, System.Text.Encoding.UTF8.GetBytes(password),
-            (byte[]) (Array) Base64.STANDARD.DecodeBytes(salt), iterations);
+            (byte[])(Array)Base64.STANDARD.DecodeBytes(salt), iterations);
           sbyte[] signed = mine.GetBytes(32);
-          byte[] signednew = (byte[]) (Array) signed;
+          byte[] signednew = (byte[])(Array)signed;
           return signed;
         }
       }
@@ -177,22 +173,22 @@ namespace ProjectHaystack.Auth
       {
         using (var hmac = new HMACSHA256())
         {
-          byte[] usSaltedPassword = (byte[]) (Array) saltedPassword;
-          byte[] usAuthMsg = (byte[]) (Array) authMsg;
+          byte[] usSaltedPassword = (byte[])(Array)saltedPassword;
+          byte[] usAuthMsg = (byte[])(Array)authMsg;
           var hmac2 = new HMACSHA256(usSaltedPassword);
-          sbyte[] clientKey = (sbyte[]) (Array) hmac2.ComputeHash(Encoding.UTF8.GetBytes("Client Key"));
-          byte[] usClientKey = (byte[]) (Array) clientKey;
+          sbyte[] clientKey = (sbyte[])(Array)hmac2.ComputeHash(Encoding.UTF8.GetBytes("Client Key"));
+          byte[] usClientKey = (byte[])(Array)clientKey;
           var sha1 = new SHA256Managed();
           byte[] usStoredKey = sha1.ComputeHash(usClientKey);
-          sbyte[] storedKey = (sbyte[]) (Array) usStoredKey;
-          var hmac3 = new HMACSHA256((byte[]) (Array) storedKey);
-          sbyte[] clientSig = (sbyte[]) (Array) hmac3.ComputeHash((byte[]) (Array) authMsg);
+          sbyte[] storedKey = (sbyte[])(Array)usStoredKey;
+          var hmac3 = new HMACSHA256((byte[])(Array)storedKey);
+          sbyte[] clientSig = (sbyte[])(Array)hmac3.ComputeHash((byte[])(Array)authMsg);
           sbyte[] clientProof = new sbyte[clientKey.Length];
           for (int i = 0; i < clientKey.Length; i++)
           {
-            clientProof[i] = (sbyte) (clientKey[i] ^ clientSig[i]);
+            clientProof[i] = (sbyte)(clientKey[i] ^ clientSig[i]);
           }
-          return Base64.STANDARD.EncodeBytes((byte[]) (Array) clientProof);
+          return Base64.STANDARD.EncodeBytes((byte[])(Array)clientProof);
         }
       }
       catch (Exception e)

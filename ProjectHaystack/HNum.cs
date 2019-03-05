@@ -23,6 +23,7 @@ namespace ProjectHaystack
     {
         private double m_val;
         private string m_unit;
+        private NumberFormatInfo m_numberFormat = CultureInfo.InvariantCulture.NumberFormat;
         // only used within member functions
         private static bool[] unitChars = new bool[128];
 
@@ -155,20 +156,13 @@ namespace ProjectHaystack
             {
                 // don't encode huge set of decimals if over 1.0
                 double abs = m_val; if (abs < 0) abs = -abs;
-                if (abs > 1.0)
-                {
-                    // Changed in unit tests .NET requires we respect thread current culture overriding
-                    //   here just creates issues in other classes like zinc reader if we were to compare values.
-                    // Haystack tokeniser changed to have a variant decimal seperator that respects 
-                    //  current thread Culture decimal seperator.  This could cause international boundary issues
-                    //  in which case the user of this needs to create a thread respecting the source location and cultre
-                    //  context.
-                    NumberFormatInfo nfi = new NumberFormatInfo();
-                    //nfi.NumberDecimalSeparator = ".";
-                    s.Append(m_val.ToString("#0.####"/*, nfi*/));
-                }
-                else
-                    s.Append(m_val);
+                // Changed in unit tests .NET requires we respect thread current culture overriding
+                //   here just creates issues in other classes like zinc reader if we were to compare values.
+                // Haystack tokeniser changed to have a variant decimal seperator that respects 
+                //  current thread Culture decimal seperator.  This could cause international boundary issues
+                //  in which case the user of this needs to create a thread respecting the source location and cultre
+                //  context.
+                s.Append(m_val.ToString("#0.####", m_numberFormat));
 
                 if (unit != null)
                 {
