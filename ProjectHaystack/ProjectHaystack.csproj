@@ -2,25 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <ApplicationIcon />
-    <OutputType>Library</OutputType>
-    <StartupObject />
-    <AssemblyName>ProjectHaystack.Client</AssemblyName>
-    <Version>1.0.1</Version>
-    <Authors>SkyFoundry and Project Haystack Community</Authors>
-    <Description>A library for working with the Project Haystack data model for semantic tagging of data. Includes a client for invoking Haystack Ops on compliant servers.</Description>
-    <Copyright>2017</Copyright>
-    <Company>SkyFoundry</Company>
-    <PackageLicenseUrl>https://opensource.org/licenses/AFL-3.0</PackageLicenseUrl>
-    <PackageProjectUrl>https://bitbucket.org/skyfoundry/haystack-csharp</PackageProjectUrl>
-    <RepositoryUrl>https://bitbucket.org/skyfoundry/haystack-csharp</RepositoryUrl>
-    <RepositoryType>Mercurial</RepositoryType>
-    <PackageTags>haystack SCRAM client SkySpark</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
     <PackageReference Include="TimeZoneConverter" Version="2.5.1" />
   </ItemGroup>
 
