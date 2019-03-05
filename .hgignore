@@ -15,6 +15,7 @@ haystack.jar
 bin/
 obj/
 packages/
+*.csproj.user
 
 # Nuget
 *.nupkg
