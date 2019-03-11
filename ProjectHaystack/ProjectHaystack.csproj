@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.0.2</Version>
+    <Authors>SkyFoundry and Project Haystack Community</Authors>
+    <Company>SkyFoundry</Company>
+    <Product />
+    <Description>A library for working with the Project Haystack data model for semantic tagging of data. Includes a client for invoking Haystack Ops on compliant servers.</Description>
+    <Copyright>2017</Copyright>
+    <PackageId>ProjectHaystack.Client</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyName>ProjectHaystack.Client</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
