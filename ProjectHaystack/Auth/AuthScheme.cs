@@ -7,8 +7,9 @@
 //
 
 using System.Collections.Generic;
-using System.Net;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace ProjectHaystack.Auth
 {
@@ -92,7 +93,7 @@ namespace ProjectHaystack.Auth
     /// <param name="cx">the current AuthClientContext</param>
     /// <param name="msg">the AuthMsg sent by the server</param>
     /// <returns>AuthMsg to send back to the server to authenticate</returns>
-    public abstract AuthMsg OnClient(AuthClientContext cx, AuthMsg msg);
+    public abstract AuthMsg OnClient(IAuthClientContext cx, AuthMsg msg);
 
     /// <summary>
     ///	Callback after successful authentication with the server.
@@ -100,10 +101,9 @@ namespace ProjectHaystack.Auth
     /// </summary>
     /// <param name="cx">the current AuthClientContext</param>
     /// <param name="msg">AuthMsg sent by the server when it authenticated the client</param>
-    public virtual void OnClientSuccess(AuthClientContext cx, AuthMsg msg)
+    public virtual void OnClientSuccess(IAuthClientContext cx, AuthMsg msg)
     {
     }
-
 
     /// <summary>
     ///	Handle non-standardized client authentication when the standard
@@ -115,10 +115,24 @@ namespace ProjectHaystack.Auth
     /// <param name="resp">the response message from the server</param>
     /// <param name="content">the body of the response if it had one, or null</param>
     /// <returns>true if the scheme processed the response, false otherwise. Returns false by default</returns>
-    public virtual bool OnClientNonStd(AuthClientContext cx, HttpWebResponse resp, string content)
+    public virtual bool OnClientNonStd(IAuthClientContext cx, HttpWebResponse resp, string content)
     {
       return false;
     }
-  }
 
+    /// <summary>
+    ///	Handle non-standardized client authentication when the standard
+    ///	process (RFC 7235) fails. If this scheme thinks it can handle the
+    ///	given response by sniffing the response code and headers, then it
+    ///	should process and return true.
+    /// </summary>
+    /// <param name="cx">the current AuthClientContext</param>
+    /// <param name="resp">the response message from the server</param>
+    /// <param name="content">the body of the response if it had one, or null</param>
+    /// <returns>true if the scheme processed the response, false otherwise. Returns false by default</returns>
+    public virtual Task<bool> OnClientNonStdAsync(IAuthClientContext cx, HttpWebResponse resp, string content)
+    {
+      return Task.FromResult(false);
+    }
+  }
 }

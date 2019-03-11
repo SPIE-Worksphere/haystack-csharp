@@ -8,6 +8,7 @@
 
 using System;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace ProjectHaystack.Auth
 {
@@ -19,14 +20,14 @@ namespace ProjectHaystack.Auth
   public sealed class BasicScheme : AuthScheme
   {
     public BasicScheme()
-      : base("basic"){}
+      : base("basic") { }
 
-    public override AuthMsg OnClient(AuthClientContext cx, AuthMsg msg)
+    public override AuthMsg OnClient(IAuthClientContext cx, AuthMsg msg)
     {
       throw new System.NotSupportedException();
     }
 
-    public override bool OnClientNonStd(AuthClientContext cx, HttpWebResponse resp, string content)
+    public override bool OnClientNonStd(IAuthClientContext cx, HttpWebResponse resp, string content)
     {
       if (!Use(resp, content))
       {
@@ -39,13 +40,15 @@ namespace ProjectHaystack.Auth
       string headerKey = "Authorization";
       string headerVal = "Basic " + cred;
 
-      HttpWebRequest c = null;
       try
       {
         // make another request to verify
-        c = cx.Prepare(cx.OpenHttpConnection(cx.uri, "GET"));
-        c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
-        HttpWebResponse resp2 = (HttpWebResponse)c.GetResponse();
+        HttpWebRequest origRequest = null;
+        var resp2 = cx.ServerCallAsync("about", c =>
+        {
+          c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
+          origRequest = c;
+        }).Result;
         resp2.GetResponseHeader(headerKey);
         if ((int)resp2.StatusCode != 200)
         {
@@ -54,25 +57,51 @@ namespace ProjectHaystack.Auth
 
         // pass Authorization and Cookie headers for future requests
         cx.headers[headerKey] = headerVal;
-        cx.AddCookiesToHeaders(c);
+        cx.AddCookiesToHeaders(origRequest);
         return true;
       }
       catch (Exception e)
       {
         throw new AuthException("basic authentication failed", e);
       }
-      finally
+    }
+
+    public override async Task<bool> OnClientNonStdAsync(IAuthClientContext cx, HttpWebResponse resp, string content)
+    {
+      if (!Use(resp, content))
       {
-        if (c != null)
+        return false;
+      }
+
+      string cred = Base64.STANDARD.EncodeUtf8(cx.user + ":" + cx.pass);
+
+      // make another qrequest to verify
+      string headerKey = "Authorization";
+      string headerVal = "Basic " + cred;
+
+      try
+      {
+        // make another request to verify
+        HttpWebRequest origRequest = null;
+        var resp2 = await cx.ServerCallAsync("about", c =>
         {
-          try
-          {
-            c.Abort();
-          }
-          catch (Exception)
-          {
-          }
+          c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
+          origRequest = c;
+        });
+        resp2.GetResponseHeader(headerKey);
+        if ((int)resp2.StatusCode != 200)
+        {
+          throw new AuthException("Basic auth failed: " + resp2.StatusCode + " " + resp2.GetResponseStream().ToString());
         }
+
+        // pass Authorization and Cookie headers for future requests
+        cx.headers[headerKey] = headerVal;
+        cx.AddCookiesToHeaders(origRequest);
+        return true;
+      }
+      catch (Exception e)
+      {
+        throw new AuthException("basic authentication failed", e);
       }
     }
 

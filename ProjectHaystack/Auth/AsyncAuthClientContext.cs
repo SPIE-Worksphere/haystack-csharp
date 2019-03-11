@@ -2,9 +2,6 @@
 // Copyright (c) 2017, SkyFoundry LLC
 // Licensed under the Academic Free License version 3.0
 //
-// History:
-//   26 Jun 2017 Hank Weber Creation
-//
 
 using System;
 using System.Collections;
@@ -12,22 +9,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using ProjectHaystack.Client;
+using System.Threading.Tasks;
 using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Auth
 {
-  public sealed class AuthClientContext : IAuthClientContext
+  public sealed class AsyncAuthClientContext : IAuthClientContext
   {
     //////////////////////////////////////////////////////////////////////////
     // Construction
     //////////////////////////////////////////////////////////////////////////
 
-    public AuthClientContext(string uri, string user, string pass)
+    public AsyncAuthClientContext(Uri uri, string user, string pass)
     {
-      this.uri = uri;
+      if (user.Length == 0)
+      {
+        throw new ArgumentException("user cannot be empty string");
+      }
+
+      Uri = uri;
       this.user = user;
       this.pass = pass;
+      ServerCallAsync = ServerCallAsyncDefault;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,8 @@ namespace ProjectHaystack.Auth
     /// <summary>
     ///   URI used to Open the connection
     /// </summary>
-    public string uri { get; private set; }
+    public string uri { get { return Uri.AbsoluteUri; } }
+    public Uri Uri { get; private set; }
 
     /// <summary>
     ///   Username used to Open the connection
@@ -73,36 +77,39 @@ namespace ProjectHaystack.Auth
       get { return authenticated; }
     }
 
-    public ServerCallAsync ServerCallAsync => throw new NotImplementedException();
+    public ServerCallAsync ServerCallAsync { get; set; }
 
     //////////////////////////////////////////////////////////////////////////
     // Open
     //////////////////////////////////////////////////////////////////////////
 
-    public AuthClientContext Open()
+    public async Task OpenAsync()
     {
       try
       {
         // send initial hello message
-        var helloResp = SendHello();
+        var helloResp = await SendHelloAsync();
         // first try standard authentication
-        if (OpenStd(helloResp))
+        if (await OpenStdAsync(helloResp))
         {
-          return Success();
+          authenticated = true;
+          return;
         }
         // check if we have a 200
         if (helloResp.StatusCode == HttpStatusCode.OK)
         {
-          return Success();
+          authenticated = true;
+          return;
         }
 
         var content = ReadContent(helloResp);
         var schemes = AuthScheme.List();
         for (var i = 0; i < schemes.Length; ++i)
         {
-          if (schemes[i].OnClientNonStd(this, helloResp, content))
+          if (await schemes[i].OnClientNonStdAsync(this, helloResp, content))
           {
-            return Success();
+            authenticated = true;
+            return;
           }
         }
 
@@ -115,9 +122,9 @@ namespace ProjectHaystack.Auth
         }
         throw new AuthException("No suitable auth scheme for: " + resCode + " " + resServer);
       }
-      catch (AuthException e)
+      catch (AuthException)
       {
-        throw e;
+        throw;
       }
       catch (Exception e)
       {
@@ -130,7 +137,7 @@ namespace ProjectHaystack.Auth
       }
     }
 
-    private HttpWebResponse SendHello()
+    private async Task<HttpWebResponse> SendHelloAsync()
     {
       // hello message
       try
@@ -138,7 +145,7 @@ namespace ProjectHaystack.Auth
         var parameters = new SortedDictionary<string, string>();
         parameters["username"] = Base64.URI.EncodeUtf8(user);
         var hello = new AuthMsg("hello", parameters);
-        return GetAuth(hello);
+        return await GetAuthAsync(hello);
       }
       catch (WebException e)
       {
@@ -154,12 +161,6 @@ namespace ProjectHaystack.Auth
       }
     }
 
-    private AuthClientContext Success()
-    {
-      authenticated = true;
-      return this;
-    }
-
     /// <summary>
     ///   Attempt standard authentication
     /// </summary>
@@ -168,7 +169,7 @@ namespace ProjectHaystack.Auth
     ///   true if haystack authentciation was used, false if the
     ///   server does not appear to implement RFC 7235.
     /// </returns>
-    private bool OpenStd(HttpWebResponse resp)
+    private async Task<bool> OpenStdAsync(HttpWebResponse resp)
     {
       // must be 401 challenge with WWW-Authenticate header
       if (resp.StatusCode != HttpStatusCode.Unauthorized)
@@ -203,7 +204,7 @@ namespace ProjectHaystack.Auth
         // let scheme handle message
         var reqMsg = scheme.OnClient(this, resMsg);
         // send request back to the server
-        resp = GetAuth(reqMsg);
+        resp = await GetAuthAsync(reqMsg);
         try
         {
           DumpRes(resp, false);
@@ -234,9 +235,9 @@ namespace ProjectHaystack.Auth
       // only keep authToken parameter for Authorization header
       authInfoMsg = new AuthMsg("bearer", new[]
       {
-  "authToken",
-  authInfoMsg.Param("authToken")
-  });
+    "authToken",
+    authInfoMsg.Param("authToken")
+    });
       headers["Authorization"] = authInfoMsg.ToString();
 
       // we did it!
@@ -246,14 +247,6 @@ namespace ProjectHaystack.Auth
     ////////////////////////////////////////////////////////////////
     // HTTP Messaging
     ////////////////////////////////////////////////////////////////
-
-    /// <summary>
-    ///   Get a new http connection to the given uri.
-    /// </summary>
-    public HttpWebRequest OpenHttpConnection(string uri, string method)
-    {
-      return HClient.OpenHttpConnection(new Uri(uri), method, connectTimeout, readTimeout);
-    }
 
     public void AddCookiesToHeaders(HttpWebRequest c)
     {
@@ -289,21 +282,13 @@ namespace ProjectHaystack.Auth
       headers["Cookie"] = sb.ToString();
     }
 
-    private HttpWebResponse GetAuth(AuthMsg msg)
+    private async Task<HttpWebResponse> GetAuthAsync(AuthMsg msg)
     {
-      try
+      return await ServerCallAsync("about", c =>
       {
-        // all AuthClientContext requests are GET message to the /About uri
-        var c = Prepare(OpenHttpConnection(uri, "GET"));
-
         // set Authorization header
         c.Headers.Set("Authorization", msg.ToString());
-        return Get(c);
-      }
-      catch (IOException e)
-      {
-        throw e;
-      }
+      });
     }
 
     /// <summary>
@@ -330,48 +315,6 @@ namespace ProjectHaystack.Auth
         c.UserAgent = userAgent;
       }
       return c;
-    }
-
-    private HttpWebResponse Get(HttpWebRequest c)
-    {
-      try
-      {
-        // connect and return response
-        try
-        {
-          var resp = c.GetResponse();
-          var httpresp = (HttpWebResponse)resp;
-          return httpresp;
-        }
-        catch (WebException e)
-        {
-          var response = e.Response;
-          var httpresp = (HttpWebResponse)response;
-          if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
-          {
-            return httpresp;
-          }
-          else
-          {
-            throw e;
-          }
-        }
-        finally
-        {
-          try
-          {
-            c.Abort();
-          }
-          catch (Exception e)
-          {
-            throw e;
-          }
-        }
-      }
-      catch (IOException e)
-      {
-        throw e;
-      }
     }
 
     private string ReadContent(HttpWebResponse resp)
@@ -424,6 +367,35 @@ namespace ProjectHaystack.Auth
       catch (IOException e)
       {
         throw e;
+      }
+    }
+
+    private async Task<HttpWebResponse> ServerCallAsyncDefault(string action, Action<HttpWebRequest> requestConfigurator)
+    {
+      HttpWebRequest c = (HttpWebRequest)WebRequest.Create(new Uri(Uri, action));
+      try
+      {
+        c.Method = "GET";
+        c.AllowAutoRedirect = false;
+        c.Timeout = connectTimeout;
+        c.ReadWriteTimeout = readTimeout;
+        c = Prepare(c);
+        requestConfigurator(c);
+        return (HttpWebResponse)(await c.GetResponseAsync());
+      }
+      catch (WebException e)
+      {
+        var response = e.Response;
+        var httpresp = (HttpWebResponse)response;
+        if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+        {
+          return httpresp;
+        }
+        throw;
+      }
+      finally
+      {
+        c.Abort();
       }
     }
 
