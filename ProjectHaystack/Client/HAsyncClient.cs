@@ -102,7 +102,7 @@ namespace ProjectHaystack.Client
     // Call "about" to query summary info.
     public HDict about()
     {
-      return call("about", HGrid.InstanceEmpty).row(0);
+      return call("about", HGrid.InstanceEmpty, "text/zinc").row(0);
     }
 
     /**
@@ -110,7 +110,7 @@ namespace ProjectHaystack.Client
      */
     public HGrid ops()
     {
-      return call("ops", HGrid.InstanceEmpty);
+      return call("ops", HGrid.InstanceEmpty, "text/zinc");
     }
 
     /**
@@ -118,7 +118,7 @@ namespace ProjectHaystack.Client
      */
     public HGrid formats()
     {
-      return call("formats", HGrid.InstanceEmpty);
+      return call("formats", HGrid.InstanceEmpty, "text/zinc");
     }
     #endregion //AddedFromJavaToolkitOperations
 
@@ -238,7 +238,7 @@ namespace ProjectHaystack.Client
       for (int i = 0; i < ids.Length; ++i)
         b.addRow(new HVal[] { ids[i] });
       HGrid req = b.toGrid();
-      return call("read", req);
+      return call("read", req, "text/zinc");
     }
 
     /**
@@ -270,7 +270,7 @@ namespace ProjectHaystack.Client
       b.addCol("limit");
       b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
       HGrid req = b.toGrid();
-      return CallAsync("read", req, null);
+      return CallAsync("read", req, "text/zinc");
     }
     public HGrid readAll(string filter, int limit)
     {
@@ -297,7 +297,7 @@ namespace ProjectHaystack.Client
       b.addCol("expr");
       b.addRow(new HVal[] { HStr.make(expr) });
       HGrid req = b.toGrid();
-      return call("eval", req);
+      return call("eval", req, "text/zinc");
     }
 
     /**
@@ -381,7 +381,7 @@ namespace ProjectHaystack.Client
         dur });
 
       HGrid req = b.toGrid();
-      HGrid res = call("pointWrite", req);
+      HGrid res = call("pointWrite", req, "text/zinc");
       return res;
     }
 
@@ -403,7 +403,7 @@ namespace ProjectHaystack.Client
       b.addRow(new HVal[] { id });
 
       HGrid req = b.toGrid();
-      HGrid res = call("pointWrite", req);
+      HGrid res = call("pointWrite", req, "text/zinc");
       return res;
     }
 
@@ -429,7 +429,7 @@ namespace ProjectHaystack.Client
       b.addCol("range");
       b.addRow(new HVal[] { id, HStr.make(range.ToString()) });
       HGrid req = b.toGrid();
-      HGrid res = call("hisRead", req);
+      HGrid res = call("hisRead", req, "text/zinc");
       return res;
     }
 
@@ -444,7 +444,7 @@ namespace ProjectHaystack.Client
     {
       HDict meta = new HDictBuilder().add("id", id).toDict();
       HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
-      call("hisWrite", req);
+      call("hisWrite", req, "text/zinc");
     }
     #endregion // AddedFromJavaRegionHistory
 
