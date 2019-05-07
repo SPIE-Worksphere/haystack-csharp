@@ -12,11 +12,12 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading.Tasks;
 using ProjectHaystack.io;
+using System.Collections;
 
 namespace ProjectHaystack
 {
     // Remember Haystack definition - "Dict: an associated array of name/value tag pairs"
-    public class HDict : HVal
+    public class HDict : HVal, IDictionary<string, HVal>
     {
         // Internal instance of HDict that is of type MapImpl
         //   that is an empty set of tags
@@ -53,6 +54,16 @@ namespace ProjectHaystack
 
         // return number of pairs - should be overriden in derived classes
         public virtual int Size { get { return m_map.Count; } }
+
+        public ICollection<string> Keys => ((IDictionary<string, HVal>)m_map).Keys;
+
+        public ICollection<HVal> Values => ((IDictionary<string, HVal>)m_map).Values;
+
+        public int Count => ((IDictionary<string, HVal>)m_map).Count;
+
+        public bool IsReadOnly => ((IDictionary<string, HVal>)m_map).IsReadOnly;
+
+        public HVal this[string key] { get => ((IDictionary<string, HVal>)m_map)[key]; set => ((IDictionary<string, HVal>)m_map)[key] = value; }
 
         public virtual int size()
         {
@@ -226,6 +237,61 @@ namespace ProjectHaystack
         public override string toJson()
         {
             return HJsonWriter.valToString(this);
+        }
+
+        public void Add(string key, HVal value)
+        {
+            ((IDictionary<string, HVal>)m_map).Add(key, value);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return ((IDictionary<string, HVal>)m_map).ContainsKey(key);
+        }
+
+        public bool Remove(string key)
+        {
+            return ((IDictionary<string, HVal>)m_map).Remove(key);
+        }
+
+        public bool TryGetValue(string key, out HVal value)
+        {
+            return ((IDictionary<string, HVal>)m_map).TryGetValue(key, out value);
+        }
+
+        public void Add(KeyValuePair<string, HVal> item)
+        {
+            ((IDictionary<string, HVal>)m_map).Add(item);
+        }
+
+        public void Clear()
+        {
+            ((IDictionary<string, HVal>)m_map).Clear();
+        }
+
+        public bool Contains(KeyValuePair<string, HVal> item)
+        {
+            return ((IDictionary<string, HVal>)m_map).Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<string, HVal>[] array, int arrayIndex)
+        {
+            ((IDictionary<string, HVal>)m_map).CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<string, HVal> item)
+        {
+            return ((IDictionary<string, HVal>)m_map).Remove(item);
+        }
+
+        public IEnumerator<KeyValuePair<string, HVal>> GetEnumerator()
+        {
+            return ((IDictionary<string, HVal>)m_map).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IDictionary<string, HVal>)m_map).GetEnumerator();
         }
 
         //////////////////////////////////////////////////////////////////////////

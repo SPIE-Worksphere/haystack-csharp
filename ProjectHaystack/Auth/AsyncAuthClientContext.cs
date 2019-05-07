@@ -27,7 +27,7 @@ namespace ProjectHaystack.Auth
         throw new ArgumentException("user cannot be empty string");
       }
 
-      Uri = uri;
+      Uri = uri.EndWithSlash();
       this.user = user;
       this.pass = pass;
       ServerCallAsync = ServerCallAsyncDefault;

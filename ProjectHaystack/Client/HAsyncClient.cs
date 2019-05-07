@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Web;
 using ProjectHaystack.Auth;
 using ProjectHaystack.io;
+using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Client
 {
@@ -40,14 +41,7 @@ namespace ProjectHaystack.Client
     /// </summary>
     public HAsyncClient(Uri uri, AsyncAuthClientContext context)
     {
-      if (!uri.AbsolutePath.EndsWith("/"))
-      {
-        var builder = new UriBuilder(uri);
-        builder.Path += "/";
-        uri = builder.Uri;
-      }
-
-      Uri = uri;
+      Uri = uri.EndWithSlash();
       _context = context;
     }
 
