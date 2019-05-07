@@ -85,5 +85,13 @@ id,tz,occupiedEnd,yearBuilt,dis,regionRef,geoAddr,geoCoord,geoStreet,area,geoSta
         });
       await client.readAsync("site", true);
     }
+
+    [TestMethod]
+    public void SlashAddedToUri()
+    {
+      var uri = new Uri("http://localhost:8080/api/demo");
+      var client = new HAsyncClient(uri, _user, _pass);
+      Assert.AreEqual(client.Uri.AbsoluteUri[client.Uri.AbsoluteUri.Length - 1], '/');
+    }
   }
 }
