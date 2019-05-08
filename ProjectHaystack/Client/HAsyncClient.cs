@@ -33,7 +33,7 @@ namespace ProjectHaystack.Client
     /// Constructor with URI to server's API and authentication credentials.
     /// </summary>
     public HAsyncClient(Uri uri, string user, string pass)
-      : this(uri, new AsyncAuthClientContext(new Uri(uri, "about"), user, pass))
+      : this(uri, new AsyncAuthClientContext(uri, user, pass))
     { }
 
     /// <summary>
