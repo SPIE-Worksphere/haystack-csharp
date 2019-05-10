@@ -23,8 +23,8 @@ namespace ProjectHaystack.Client
   /// HAsyncClient asynchronously manages a logical connection to a HTTP REST haystack server.
   /// </summary>
   /// <seealso> cref= <a href='http://project-haystack.org/doc/Rest'>Project Haystack</a> </seealso>
-  public class HAsyncClient : IHClient, IHProj
-  {
+  public class HAsyncClient : IHClient, IHProj, IHAsyncClient
+    {
     private readonly AsyncAuthClientContext _context;
     private int _connectTimeout = 60 * 1000;
     private int _readTimeout = 60 * 1000;
@@ -33,7 +33,7 @@ namespace ProjectHaystack.Client
     /// Constructor with URI to server's API and authentication credentials.
     /// </summary>
     public HAsyncClient(Uri uri, string user, string pass)
-      : this(uri, new AsyncAuthClientContext(new Uri(uri, "about"), user, pass))
+      : this(uri, new AsyncAuthClientContext(uri, user, pass))
     { }
 
     /// <summary>
