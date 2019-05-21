@@ -327,7 +327,7 @@ namespace ProjectHaystack.Client
     public async Task<HGrid[]> EvalAllAsync(HGrid req, bool bChecked)
     {
       string reqStr = HZincWriter.gridToString(req);
-      string resStr = await PostStringAsync("evalAll", reqStr, null);
+      string resStr = await PostStringAsync("evalAll", reqStr, "text/zinc");
       HGrid[] res = new HZincReader(resStr).readGrids();
       if (bChecked)
       {
