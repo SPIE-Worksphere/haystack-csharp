@@ -79,6 +79,8 @@ namespace ProjectHaystack.Auth
 
     public ServerCallAsync ServerCallAsync { get; set; }
 
+    public ServerCall ServerCall => throw new NotImplementedException();
+
     //////////////////////////////////////////////////////////////////////////
     // Open
     //////////////////////////////////////////////////////////////////////////
@@ -150,12 +152,15 @@ namespace ProjectHaystack.Auth
       catch (WebException e)
       {
         var response = e.Response;
-        var httpresp = (HttpWebResponse)response;
-        // 401 Unauthorized
-        // 500 Internal Server Error, for compatibility with nhaystack
-        if (httpresp.StatusCode == HttpStatusCode.Unauthorized || httpresp.StatusCode == HttpStatusCode.InternalServerError)
+        if (response != null)
         {
-          return httpresp;
+          var httpresp = (HttpWebResponse)response;
+          // 401 Unauthorized
+          // 500 Internal Server Error, for compatibility with nhaystack
+          if (httpresp.StatusCode == HttpStatusCode.Unauthorized || httpresp.StatusCode == HttpStatusCode.InternalServerError)
+          {
+            return httpresp;
+          }
         }
         throw;
       }
@@ -181,7 +186,7 @@ namespace ProjectHaystack.Auth
       // don't Use this mechanism for Basic which we
       // handle as a non-standard scheme because the headers
       // don't fit nicely into our restricted AuthMsg format
-      if (wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
+      if (string.IsNullOrEmpty(wwwAuth) || wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
       {
         return false;
       }
@@ -386,10 +391,13 @@ namespace ProjectHaystack.Auth
       catch (WebException e)
       {
         var response = e.Response;
-        var httpresp = (HttpWebResponse)response;
-        if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null)
         {
-          return httpresp;
+          var httpresp = (HttpWebResponse)response;
+          if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+          {
+            return httpresp;
+          }
         }
         throw;
       }

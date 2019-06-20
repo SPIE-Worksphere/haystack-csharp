@@ -28,6 +28,7 @@ namespace ProjectHaystack.Auth
       this.uri = uri;
       this.user = user;
       this.pass = pass;
+      ServerCall = ServerCallDefault;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -74,6 +75,8 @@ namespace ProjectHaystack.Auth
     }
 
     public ServerCallAsync ServerCallAsync => throw new NotImplementedException();
+
+    public ServerCall ServerCall { get; set; }
 
     //////////////////////////////////////////////////////////////////////////
     // Open
@@ -143,12 +146,15 @@ namespace ProjectHaystack.Auth
       catch (WebException e)
       {
         var response = e.Response;
-        var httpresp = (HttpWebResponse)response;
-        // 401 Unauthorized
-        // 500 Internal Server Error, for compatibility with nhaystack
-        if (httpresp.StatusCode == HttpStatusCode.Unauthorized || httpresp.StatusCode == HttpStatusCode.InternalServerError)
+        if (response != null)
         {
-          return httpresp;
+          var httpresp = (HttpWebResponse)response;
+          // 401 Unauthorized
+          // 500 Internal Server Error, for compatibility with nhaystack
+          if (httpresp.StatusCode == HttpStatusCode.Unauthorized || httpresp.StatusCode == HttpStatusCode.InternalServerError)
+          {
+            return httpresp;
+          }
         }
         throw;
       }
@@ -180,7 +186,7 @@ namespace ProjectHaystack.Auth
       // don't Use this mechanism for Basic which we
       // handle as a non-standard scheme because the headers
       // don't fit nicely into our restricted AuthMsg format
-      if (wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
+      if (string.IsNullOrEmpty(wwwAuth) || wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
       {
         return false;
       }
@@ -346,15 +352,15 @@ namespace ProjectHaystack.Auth
         catch (WebException e)
         {
           var response = e.Response;
-          var httpresp = (HttpWebResponse)response;
-          if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+          if (response != null)
           {
-            return httpresp;
+            var httpresp = (HttpWebResponse)response;
+            if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+            {
+              return httpresp;
+            }
           }
-          else
-          {
-            throw e;
-          }
+          throw;
         }
         finally
         {
@@ -424,6 +430,38 @@ namespace ProjectHaystack.Auth
       catch (IOException e)
       {
         throw e;
+      }
+    }
+    
+    private HttpWebResponse ServerCallDefault(string action, Action<HttpWebRequest> requestConfigurator)
+    {
+      HttpWebRequest c = (HttpWebRequest)WebRequest.Create(new Uri(new Uri(uri), action));
+      try
+      {
+        c.Method = "GET";
+        c.AllowAutoRedirect = false;
+        c.Timeout = connectTimeout;
+        c.ReadWriteTimeout = readTimeout;
+        c = Prepare(c);
+        requestConfigurator(c);
+        return (HttpWebResponse)(c.GetResponse());
+      }
+      catch (WebException e)
+      {
+        var response = e.Response;
+        if (response != null)
+        {
+          var httpresp = (HttpWebResponse)response;
+          if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+          {
+            return httpresp;
+          }
+        }
+        throw;
+      }
+      finally
+      {
+        c.Abort();
       }
     }
 

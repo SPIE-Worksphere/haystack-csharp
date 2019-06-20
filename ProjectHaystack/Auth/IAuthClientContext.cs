@@ -18,7 +18,10 @@ namespace ProjectHaystack.Auth
     void AddCookiesToHeaders(HttpWebRequest c);
 
     ServerCallAsync ServerCallAsync { get; }
+    ServerCall ServerCall { get; }
   }
 
   public delegate Task<HttpWebResponse> ServerCallAsync(string action, Action<HttpWebRequest> requestConfigurator);
+
+  public delegate HttpWebResponse ServerCall(string action, Action<HttpWebRequest> requestConfigurator);
 }

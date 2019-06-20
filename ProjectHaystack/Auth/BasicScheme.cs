@@ -44,11 +44,11 @@ namespace ProjectHaystack.Auth
       {
         // make another request to verify
         HttpWebRequest origRequest = null;
-        var resp2 = cx.ServerCallAsync("about", c =>
+        var resp2 = cx.ServerCall("about", c =>
         {
           c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
           origRequest = c;
-        }).Result;
+        });
         resp2.GetResponseHeader(headerKey);
         if ((int)resp2.StatusCode != 200)
         {
@@ -131,8 +131,8 @@ namespace ProjectHaystack.Auth
           return true;
         }
 
-        // fallback to basic if server says it's Niagara.
-        if (server.StartsWith("niagara", StringComparison.Ordinal))
+        // fallback to basic if server says it's Niagara; Niagara 4.6 return empry WWW-Authenticate and Server headers
+        if (server.StartsWith("niagara", StringComparison.Ordinal) || (resCode == 401 && string.IsNullOrEmpty(wwwAuth) && string.IsNullOrEmpty(server)))
         {
           return true;
         }
