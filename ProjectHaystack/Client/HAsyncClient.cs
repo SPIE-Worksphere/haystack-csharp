@@ -155,7 +155,7 @@ namespace ProjectHaystack.Client
         c.Accept = mimeResponse ?? "text/plain";
         // c.ContentType = mimeRequest == null ? "text/plain; charset=utf-8" : mimeRequest + "; charset=utf-8";
         // c.Accept = mimeResponse == null ? "text/plain; charset=utf-8" : mimeResponse + "; charset=utf-8";
-        byte[] data = Encoding.ASCII.GetBytes(req);
+        byte[] data = Encoding.UTF8.GetBytes(req);
         c.ContentLength = data.Length;
         Stream stream = c.GetRequestStream();
         stream.Write(data, 0, data.Length);
