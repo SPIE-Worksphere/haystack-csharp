@@ -386,24 +386,25 @@ namespace ProjectHaystack.Auth
         c.ReadWriteTimeout = readTimeout;
         c = Prepare(c);
         requestConfigurator(c);
-        return (HttpWebResponse)(await c.GetResponseAsync());
+        var response = (HttpWebResponse)(await c.GetResponseAsync());
+        if ((int)response.StatusCode >= 300 || (int)response.StatusCode < 200)
+          throw new WebException("Invalid status code", null, WebExceptionStatus.ProtocolError, response);
+        return response;
       }
       catch (WebException e)
       {
         var response = e.Response;
-        if (response != null)
+        var httpresp = (HttpWebResponse)response;
+        if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
         {
-          var httpresp = (HttpWebResponse)response;
-          if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
-          {
-            return httpresp;
-          }
+          return httpresp;
         }
         throw;
       }
-      finally
+      catch (Exception)
       {
         c.Abort();
+        throw;
       }
     }
 
