@@ -7,7 +7,7 @@
     <authors>$author$</authors>
     <owners>$author$</owners>
     <license type="expression">AFL-3.0</license>
-    <projectUrl>https://bitbucket.org/skyfoundry/haystack-csharp</projectUrl>
+    <projectUrl>https://github.com/Strukton-Worksphere/haystack-csharp</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes></releaseNotes>
