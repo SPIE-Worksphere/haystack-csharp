@@ -64,22 +64,22 @@ namespace ProjectHaystack.io
         //////////////////////////////////////////////////////////////////////////
 
         // Write using UTF-8 
-        public HJsonWriter(StreamWriter swOut)
+        public HJsonWriter(StreamWriter swOut, bool encoderShouldEmitUTF8Identifier = false)
         {
-            m_swOut = new StreamWriter(swOut.BaseStream, Encoding.UTF8);
+            m_swOut = new StreamWriter(swOut.BaseStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
         }
 
         // Constructor with stringwriter replaced with memory steam (has a Tostring function)
-        private HJsonWriter(MemoryStream msOut)
+        private HJsonWriter(MemoryStream msOut, bool encoderShouldEmitUTF8Identifier = false)
         {
-            m_swOut = new StreamWriter(msOut, Encoding.UTF8);
+            m_swOut = new StreamWriter(msOut, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
         }
 
-        public HJsonWriter(Stream strmOut)
+        public HJsonWriter(Stream strmOut, bool encoderShouldEmitUTF8Identifier = false)
         {
-            m_swOut = new StreamWriter(strmOut, Encoding.UTF8);
+            m_swOut = new StreamWriter(strmOut, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
         }
 

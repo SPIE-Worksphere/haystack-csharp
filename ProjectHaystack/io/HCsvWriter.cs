@@ -47,10 +47,10 @@ namespace ProjectHaystack.io
         //////////////////////////////////////////////////////////////////////////
 
         // Write using UTF-8 
-        public HCsvWriter(Stream strmOut)
+        public HCsvWriter(Stream strmOut, bool encoderShouldEmitUTF8Identifier = false)
         {
             m_cDelimiter = ',';
-            m_swOut = new StreamWriter(strmOut, Encoding.UTF8);
+            m_swOut = new StreamWriter(strmOut, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // Java implementation bubbled exception - don't see it adds value
         }
 
