@@ -10,7 +10,8 @@ trigger:
 
 pr:
   autoCancel: true
-  branches: master
+  branches: 
+    include: master
 
 name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
 
