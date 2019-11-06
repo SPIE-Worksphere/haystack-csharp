@@ -27,7 +27,7 @@ steps:
   displayName: 'Build'
   inputs:
     command: 'build'
-    projects: '*/ProjectHaystack.sln'
+    projects: '**/ProjectHaystack.sln'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'test'
