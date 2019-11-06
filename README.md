@@ -1,5 +1,7 @@
 # README #
 
+[![Build Status](https://worksphere.visualstudio.com/Worksphere-OSS/_apis/build/status/Strukton-Worksphere.haystack-csharp?branchName=master)](https://worksphere.visualstudio.com/Worksphere-OSS/_build/latest?definitionId=231&branchName=master)
+
 ### What is this repository for? ###
 
 Connecting to Haystack 3.0 via SCRAM mechanism.
