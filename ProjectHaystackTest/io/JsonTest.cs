@@ -28,7 +28,8 @@ namespace ProjectHaystackTest.io
             gb.addRow(new HVal[] { HNum.make(12), HNum.make(72.3, "\u00b0F") });
             gb.addRow(new HVal[] { HNum.make(double.NegativeInfinity), HNum.make(Double.NaN) });
             gb.addRow(new HVal[] { HDate.make(2015, 6, 9), HTime.make(1, 2, 3) });
-            gb.addRow(new HVal[] { HDateTime.make(634429600180690000L, HTimeZone.make("New_York", false)), HUri.make("foo.txt") });
+            var tz = HTimeZone.make("UTC", true);
+            gb.addRow(new HVal[] { HDateTime.make(634429600180690000L, tz), HUri.make("foo.txt") });
             gb.addRow(new HVal[] { HRef.make("abc"), HRef.make("abc", "A B C") });
             gb.addRow(new HVal[] { HBin.make("text/plain"), HCoord.make(90, -123) });
             HGrid grid = gb.toGrid();
@@ -50,7 +51,7 @@ namespace ProjectHaystackTest.io
             Assert.AreEqual(lines[11], "{\"a\":\"n:12\", \"b\":\"n:72.3 \u00b0F\"},");
             Assert.AreEqual(lines[12], "{\"a\":\"n:-INF\", \"b\":\"n:NaN\"},");
             Assert.AreEqual(lines[13], "{\"a\":\"d:2015-06-09\", \"b\":\"h:01:02:03\"},");
-            Assert.AreEqual(lines[14], "{\"a\":\"t:2011-06-06T12:26:58.069-05:00 New_York\", \"b\":\"u:foo.txt\"},");
+            Assert.AreEqual(lines[14], "{\"a\":\"t:2011-06-06T12:26:58.069Z UTC\", \"b\":\"u:foo.txt\"},");
             Assert.AreEqual(lines[15], "{\"a\":\"r:abc\", \"b\":\"r:abc A B C\"},");
             Assert.AreEqual(lines[16], "{\"a\":\"b:text/plain\", \"b\":\"c:90.0,-123.0\"}");
             Assert.AreEqual(lines[17], "]");

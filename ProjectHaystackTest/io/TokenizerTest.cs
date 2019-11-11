@@ -114,15 +114,27 @@ namespace ProjectHaystackTest.io
             HTimeZone ny = HTimeZone.make("New_York", false);
             HTimeZone utc = HTimeZone.UTC;
             HTimeZone london = HTimeZone.make("London", false);
-            verifyToks("2016-01-13T09:51:33-05:00 New_York", new object[] { dt, HDateTime.make(2016, 1, 13, 9, 51, 33, ny/*, tzOffset(-5, 0)*/) });
-            verifyToks("2016-01-13T09:51:33.353-05:00 New_York", new object[] { dt, HDateTime.make(HDate.make(2016, 1, 13), HTime.make(9, 51, 33, 353), ny/*, tzOffset(-5, 0)*/) });
+            // Ignore issues with locally installed timezones.
+            if (ny != null)
+            {
+                verifyToks("2016-01-13T09:51:33-05:00 New_York", new object[] { dt, HDateTime.make(2016, 1, 13, 9, 51, 33, ny/*, tzOffset(-5, 0)*/) });
+                verifyToks("2016-01-13T09:51:33.353-05:00 New_York", new object[] { dt, HDateTime.make(HDate.make(2016, 1, 13), HTime.make(9, 51, 33, 353), ny/*, tzOffset(-5, 0)*/) });
+            }
             verifyToks("2010-12-18T14:11:30.924Z", new object[] { dt, HDateTime.make(HDate.make(2010, 12, 18), HTime.make(14, 11, 30, 924), utc) });
             verifyToks("2010-12-18T14:11:30.924Z UTC", new object[] { dt, HDateTime.make(HDate.make(2010, 12, 18), HTime.make(14, 11, 30, 924), utc) });
-            verifyToks("2010-12-18T14:11:30.924Z London", new object[] { dt, HDateTime.make(HDate.make(2010, 12, 18), HTime.make(14, 11, 30, 924), london) });
+            // Ignore issues with locally installed timezones.
+            if (london != null)
+                verifyToks("2010-12-18T14:11:30.924Z London", new object[] { dt, HDateTime.make(HDate.make(2010, 12, 18), HTime.make(14, 11, 30, 924), london) });
             // Apparently PST8PDT is not valid in java? - Not tested for windows either
             //    verifyToks("2015-01-02T06:13:38.701-08:00 PST8PDT", new Object[] {dt, HDateTime.make(HDate.make(2015,1,2), HTime.make(6,13,38,701), HTimeZone.make("PST8PDT"), tzOffset(-8,0))});
-            verifyToks("2010-03-01T23:55:00.013-05:00 GMT+5", new object[] { dt, HDateTime.make(HDate.make(2010, 3, 1), HTime.make(23, 55, 0, 13), HTimeZone.make("GMT+5", false)/*, tzOffset(-5, 0)*/) });
-            verifyToks("2010-03-01T23:55:00.013+10:00 GMT-10 ", new object[] { dt, HDateTime.make(HDate.make(2010, 3, 1), HTime.make(23, 55, 0, 13), HTimeZone.make("GMT-10", false)/*, tzOffset(10, 0)*/) });
+            var tz = HTimeZone.make("GMT+5", false);
+            // Ignore issues with locally installed timezones.
+            if (tz != null)
+                verifyToks("2010-03-01T23:55:00.013-05:00 GMT+5", new object[] { dt, HDateTime.make(HDate.make(2010, 3, 1), HTime.make(23, 55, 0, 13), tz/*, tzOffset(-5, 0)*/) });
+            tz = HTimeZone.make("GMT-10", false);
+            // Ignore issues with locally installed timezones.
+            if (tz != null)
+                verifyToks("2010-03-01T23:55:00.013+10:00 GMT-10 ", new object[] { dt, HDateTime.make(HDate.make(2010, 3, 1), HTime.make(23, 55, 0, 13), tz/*, tzOffset(10, 0)*/) });
         }
 
         [TestMethod]
