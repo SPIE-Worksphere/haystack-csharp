@@ -67,17 +67,17 @@ namespace ProjectHaystack.io
         //////////////////////////////////////////////////////////////////////////
 
         // Write using UTF-8 
-        public HZincWriter(StreamWriter swOut)
+        public HZincWriter(StreamWriter swOut, bool encoderShouldEmitUTF8Identifier = false)
         {
-            m_swOut = new StreamWriter(swOut.BaseStream, Encoding.UTF8);
+            m_swOut = new StreamWriter(swOut.BaseStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
             m_iGridDepth = 0;
             m_iVersion = 3;
         }
 
-        public HZincWriter (Stream strmOut)
+        public HZincWriter (Stream strmOut, bool encoderShouldEmitUTF8Identifier = false)
         {
-            m_swOut = new StreamWriter(strmOut, Encoding.UTF8);
+            m_swOut = new StreamWriter(strmOut, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
             m_iGridDepth = 0;
             m_iVersion = 3;
