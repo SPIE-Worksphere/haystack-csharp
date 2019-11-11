@@ -85,8 +85,7 @@ namespace ProjectHaystackTest
             try { HCoord.make(13, -181); Assert.Fail(); } catch (ArgumentException) { Assert.IsTrue(true); }
         }
 
-        [TestMethod]
-        void verifyCoord(double lat, double lng, string s)
+        private void verifyCoord(double lat, double lng, string s)
         {
             HCoord c = HCoord.make(lat, lng);
             Assert.AreEqual(c.lat, lat);
