@@ -5,7 +5,6 @@
 // History:
 //   16 August 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProjectHaystack;
 

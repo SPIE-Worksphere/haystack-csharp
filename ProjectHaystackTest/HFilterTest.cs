@@ -5,10 +5,9 @@
 // History:
 //   16 August 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
-using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProjectHaystack;
-using System.Collections.Generic;
 
 namespace ProjectHaystackTest
 {
@@ -19,11 +18,11 @@ namespace ProjectHaystackTest
         private Dictionary<string, HDict> m_map;
         // Access
         public Dictionary<string, HDict> Map { get { return m_map; } }
-        public dbPather (Dictionary<string, HDict> mp)
+        public dbPather(Dictionary<string, HDict> mp)
         {
             m_map = mp;
         }
-        public HDict find (string id)
+        public HDict find(string id)
         {
             return m_map[id];
         }
@@ -191,7 +190,7 @@ namespace ProjectHaystackTest
               .add("bar")
               .toDict();
 
-            Dictionary< string, HDict > db = new Dictionary<string, HDict>();
+            Dictionary<string, HDict> db = new Dictionary<string, HDict>();
             db.Add("a", a);
             db.Add("b", b);
             db.Add("c", c);
@@ -224,8 +223,7 @@ namespace ProjectHaystackTest
             verifyInclude(db, "foo and bar and num==300", "");
         }
 
-        [TestMethod]
-        void verifyInclude(Dictionary<string, HDict> map, string query, string expected)
+        private void verifyInclude(Dictionary<string, HDict> map, string query, string expected)
         {
 
             dbPather db = new dbPather(map);
@@ -241,11 +239,11 @@ namespace ProjectHaystackTest
             string actual = "";
             // I don't like char loops like this but it is not incorrect either for
             //  sake of consistency with Java toolkit I have left it alone
-            for (int c = 'a'; c<='c'; ++c)
+            for (int c = 'a'; c <= 'c'; ++c)
             {
                 string id = "" + (char)c;
                 if (q.include(db.find(id), db))
-                    actual += actual.Length > 0 ? ","+id : id;
+                    actual += actual.Length > 0 ? "," + id : id;
             }
             Assert.AreEqual(expected, actual);
         }

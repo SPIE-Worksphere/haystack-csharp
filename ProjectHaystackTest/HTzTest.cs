@@ -29,6 +29,9 @@ namespace ProjectHaystackTest
         private void verifyTz(string name, string dntzId)
         {
             HTimeZone tz = HTimeZone.make(name, false);
+            // Ignore issues with locally installed timezones.
+            if (tz == null)
+                return;
             TimeZoneInfo dntz = tz.dntz;
             Assert.AreEqual(tz.ToString(), name);
             Assert.AreEqual(dntz.Id, dntzId);

@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHaystack", "ProjectHaystack\ProjectHaystack.csproj", "{18D39C9A-88E2-4764-93F1-B7C01D9EE52C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectHaystack", "ProjectHaystack\ProjectHaystack.csproj", "{18D39C9A-88E2-4764-93F1-B7C01D9EE52C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHaystackTest", "ProjectHaystackTest\ProjectHaystackTest.csproj", "{E6A52B1E-3FAE-4C69-B018-2BDE471FEE0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectHaystackTest", "ProjectHaystackTest\ProjectHaystackTest.csproj", "{E6A52B1E-3FAE-4C69-B018-2BDE471FEE0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build-system", "build-system", "{322B682B-DA8A-4A7D-97B1-CDED40B4B0A5}"
+	ProjectSection(SolutionItems) = preProject
+		build-system\unix-pr-validation.yml = build-system\unix-pr-validation.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +20,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{18D39C9A-88E2-4764-93F1-B7C01D9EE52C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -44,5 +46,11 @@ Global
 		{E6A52B1E-3FAE-4C69-B018-2BDE471FEE0D}.Release|x64.Build.0 = Release|Any CPU
 		{E6A52B1E-3FAE-4C69-B018-2BDE471FEE0D}.Release|x86.ActiveCfg = Release|Any CPU
 		{E6A52B1E-3FAE-4C69-B018-2BDE471FEE0D}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E3070428-185F-446B-8EC4-49DC7B79E798}
 	EndGlobalSection
 EndGlobal

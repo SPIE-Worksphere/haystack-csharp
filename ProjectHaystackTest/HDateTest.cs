@@ -68,7 +68,11 @@ namespace ProjectHaystackTest
 
         private void verifyMidnight(HDate date, string tzName, string str)
         {
-            HDateTime ts = date.midnight(HTimeZone.make(tzName, false));
+            var tz = HTimeZone.make(tzName, false);
+            // Ignore issues with locally installed timezones.
+            if (tz == null)
+                return;
+            HDateTime ts = date.midnight(tz);
             Assert.AreEqual(ts.date, date);
             Assert.AreEqual(ts.time.Hour, 0);
             Assert.AreEqual(ts.time.Minute, 0);
