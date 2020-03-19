@@ -213,14 +213,7 @@ namespace ProjectHaystack
          //   and less looping. Got to love .NET !
         public static bool isTagName(string n)
         {
-            if (n.Length == 0) return false;
-            int errorCounterWholeString = Regex.Matches(n, @"[^a-zA-Z0-9_]").Count;
-            string first = n.Substring(0, 1);
-            int errorCounterFirst = Regex.Matches(first, @"[^a-z]").Count;
-            if ((errorCounterFirst > 0) || (errorCounterWholeString > 0))
-                return false;
-            else
-                return true;
+            return n != null && Regex.IsMatch(n, @"^[a-z^][a-zA-Z0-9_]*$");
         }
 
         //////////////////////////////////////////////////////////////////////////
