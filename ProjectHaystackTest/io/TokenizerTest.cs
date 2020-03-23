@@ -36,6 +36,7 @@ namespace ProjectHaystackTest.io
             verifyToks("fooBar1999x", new object[] { id, "fooBar1999x" });
             verifyToks("foo_23", new object[] { id, "foo_23" });
             verifyToks("Foo", new object[] { id, "Foo" });
+            verifyToks("^foo", new object[] { id, "^foo" });
         }
 
         [TestMethod]
@@ -166,6 +167,24 @@ namespace ProjectHaystackTest.io
                 id, "d", HaystackToken.nl, null, HaystackToken.nl, null,
                 id, "e"
               });
+        }
+
+        [TestMethod]
+        public void testComplexString()
+        {
+            verifyToks(
+                @"{ id: ""1234:ab"", date: 2019-01-01T12:13:14 UTC, num: 100ms, def: ^tagdef }",
+                new object[] {
+                    HaystackToken.lbrace, null,
+                    HaystackToken.id, "id", HaystackToken.colon, null, HaystackToken.str, HRef.make("1234:ab"),
+                    HaystackToken.comma, null,
+                    HaystackToken.id, "date", HaystackToken.colon, null, HaystackToken.dateTime, HDateTime.make("2019-01-01T12:13:14 UTC", false),
+                    HaystackToken.comma, null,
+                    HaystackToken.id, "num", HaystackToken.colon, null, HaystackToken.num, HNum.make(100, "ms"),
+                    HaystackToken.comma, null,
+                    HaystackToken.id, "def", HaystackToken.colon, null, HaystackToken.id, "^tagdef",
+                    HaystackToken.rbrace, null,
+                });
         }
 
         private HNum n(long val) { return HNum.make(val); }
