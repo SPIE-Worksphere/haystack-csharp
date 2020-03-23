@@ -179,6 +179,7 @@ namespace ProjectHaystack.io
         private static bool isIdStart(int cur)
         {
             if (cur < 0) return false;
+            if ((char)cur == '^') return true;
             if ('a' <= (char)cur && (char)cur <= 'z') return true;
             if ('A' <= (char)cur && (char)cur <= 'Z') return true;
             return false;
