@@ -154,6 +154,7 @@ namespace ProjectHaystack
 
         // Get tag as HNum or raise UnknownNameException or ClassCastException. 
         public double getDouble(string name) { return ((HNum)get(name)).doubleval; }
+        public HDef getDef(string name) { return ((HDef)get(name)); }
 
         //////////////////////////////////////////////////////////////////////////
         // Identity
