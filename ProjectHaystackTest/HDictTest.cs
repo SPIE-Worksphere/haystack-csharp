@@ -172,16 +172,8 @@ namespace ProjectHaystackTest
         [TestMethod]
         public void testDef()
         {
-            HDict def = new HDictBuilder()
-              .add("id", HRef.make("aaaa-bbbb"))
-              .add("def", "^defType")
-              .add("^defType", "Some description")
-              .add("mod", HDate.make(2000, 12, 3))
-              .toDict();
-
-            Assert.AreEqual(new HDictBuilder().add("id", HRef.make("a")).toDict().dis(), "a");
-            Assert.AreEqual(new HDictBuilder().add("id", HRef.make("a", "b")).toDict().dis(), "b");
-            Assert.AreEqual(new HDictBuilder().add("id", HRef.make("a")).add("dis", "d").toDict().dis(), "d");
+            Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().getDef("def").ToString(), "^a");
+            Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().toString(), "{def:^a}");
         }
     }
 }

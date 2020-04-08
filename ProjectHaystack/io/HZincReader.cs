@@ -200,7 +200,7 @@ namespace ProjectHaystack.io
                 if ("R".CompareTo(id) == 0) return HRemove.VAL;
                 if ("NaN".CompareTo(id) == 0) return HNum.NaN;
                 if ("INF".CompareTo(id) == 0) return HNum.POS_INF;
-                if (id.StartsWith("^")) return HStr.make(id);
+                if (id.StartsWith("^")) return HDef.make(id);
 
                 err("Unexpected identifier: " + id);
                 return null; // This is not code that will be executable because of call to err

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ProjectHaystack;
 using ProjectHaystack.io;
 
 namespace ProjectHaystackTest.io
@@ -14,6 +15,7 @@ namespace ProjectHaystackTest.io
 id,def,doc,mod
 @p:struktonLibrary:r:25b81501-75003ad2 ""struktonActivePointOnly"",^struktonActivePointOnly,""Import only active points"",2020-01-20T07:36:33.162Z");
             var grid = reader.readGrid();
+            Assert.IsTrue(grid.row(0).get("def") is HDef);
         }
     }
 }
