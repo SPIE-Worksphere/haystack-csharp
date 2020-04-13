@@ -6,10 +6,7 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -22,10 +19,8 @@ namespace ProjectHaystack
      */
     public class HBin : HVal
     {
-        /** MIME type for binary file */
-        private string m_mime;
+        public string mime { get; }
 
-        public string mime { get { return m_mime; } }
         // Construct for MIME type 
         public static HBin make(string strMime)
         {
@@ -38,7 +33,7 @@ namespace ProjectHaystack
         private HBin(string mime)
         {
             verifyMime(mime);
-            m_mime = mime;
+            this.mime = mime;
         }
 
 

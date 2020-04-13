@@ -5,11 +5,6 @@
 // History:
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -20,8 +15,6 @@ namespace ProjectHaystack
      */
     public class HBool : HVal
     {
-        private bool m_value;
-
         // Singleton value for true 
         public static readonly HBool TRUE = new HBool(true);
 
@@ -30,35 +23,32 @@ namespace ProjectHaystack
 
         private HBool(bool val)
         {
-            m_value = val;
+            this.val = val;
         }
-        
-        public static HBool make (bool bVal)
+
+        public static HBool make(bool bVal)
         {
             return (new HBool(bVal));
         }
         // Hash code is same as java.lang.Boolean 
         public int hashCode()
         {
-            return m_value.GetHashCode();
+            return val.GetHashCode();
         }
 
         // Equals is based on reference 
         public override bool hequals(object that)
         {
             if (that is HBool)
-                return (m_value == ((HBool)that).val);
+                return (val == ((HBool)that).val);
             else return false;
         }
 
-        public bool val
-        {
-            get { return m_value; }
-        }
+        public bool val { get; }
         // Encode as "true" or "false" 
         public override string ToString()
         {
-            return m_value ? "true" : "false";
+            return val ? "true" : "false";
         }
 
         public override string toJson()
@@ -71,7 +61,7 @@ namespace ProjectHaystack
         /** Encode as "T" or "F" */
         public override string toZinc()
         {
-            return m_value ? "T" : "F";
+            return val ? "T" : "F";
         }
     }
 }

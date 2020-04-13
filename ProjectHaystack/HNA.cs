@@ -5,11 +5,6 @@
 // History:
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
