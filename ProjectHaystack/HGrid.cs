@@ -6,12 +6,10 @@
 //   1 April 2018   Ian Davies  Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using ProjectHaystack.io;
 
 namespace ProjectHaystack
@@ -20,15 +18,14 @@ namespace ProjectHaystack
     //   by List - Prefer to use one type and not mix.  If we are using basic arrays 
     //   then they should be used everywhere, if we are using generic collections 
     //   then we should use them everywhere.
-    public class HGrid : HVal
+    public class HGrid : HVal, IEnumerable<HRow>
     {
-        private HDict m_Meta;
         private List<HCol> m_cols;
         private List<HRow> m_rows;
         private Dictionary<string, HCol> m_colsByName;
         // Singleton empty instance
         private static HGrid m_empty;
-        
+
         public static HGrid InstanceEmpty
         {
             get
@@ -44,13 +41,10 @@ namespace ProjectHaystack
         }
 
         // Constructor should be within this class library only
-        internal HGrid (HDict meta, List<HCol> cols, List<List<HVal>> rowLists)
+        internal HGrid(HDict meta, List<HCol> cols, List<List<HVal>> rowLists)
         {
-            // Argument checking before assigning members
-            //   (in case they are caught and handled and leave an invalid state)
-            // meta can't be null
-            if (meta == null)
-                throw new ArgumentNullException("metadata cannot be null");
+            this.meta = meta ?? throw new ArgumentNullException("metadata cannot be null");
+
             // number of cells in rows must match size of cols
             int iIndex = 0;
             foreach (List<HVal> curRow in rowLists)
@@ -73,7 +67,6 @@ namespace ProjectHaystack
                 }
             }
 
-            m_Meta = meta;
             m_cols = cols;
             m_rows = new List<HRow>();
             foreach (List<HVal> curRow in rowLists)
@@ -85,17 +78,14 @@ namespace ProjectHaystack
             {
                 m_colsByName.Add(curCol.Name, curCol);
             }
-
         }
+
         //////////////////////////////////////////////////////////////////////////
         // Access
         //////////////////////////////////////////////////////////////////////////
 
         // Return grid level meta 
-        public HDict meta
-        {
-            get { return m_Meta; }
-        }
+        public HDict meta { get; }
 
         // Error grid have the meta.err marker tag
         public bool isErr() { return meta.has("err"); }
@@ -164,7 +154,7 @@ namespace ProjectHaystack
             // null and unlike type check
             if (o == null || GetType() != o.GetType()) return false;
             // further checks require it is of type HGrid
-            if (!(o is HGrid)) return false; 
+            if (!(o is HGrid)) return false;
             HGrid gridO = (HGrid)o;
             // Compare Meta
             if (!meta.hequals(gridO.meta)) return false;
@@ -204,5 +194,12 @@ namespace ProjectHaystack
             return (HZincWriter.gridToString(this));
         }
 
+        public IEnumerable<HCol> Cols => m_cols.AsEnumerable();
+
+        public IEnumerable<HRow> Rows => m_rows.AsEnumerable();
+
+        public IEnumerator<HRow> GetEnumerator() => m_rows.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => m_rows.GetEnumerator();
     }
 }

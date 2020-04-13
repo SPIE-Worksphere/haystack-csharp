@@ -7,11 +7,8 @@
 //                           Uses Dot Net DateTime for most operations
 //
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -23,35 +20,17 @@ namespace ProjectHaystack
     /* Porting note: A lot of functionality replaced with C# DateTime */
     public class HDate : HVal
     {
-        // Four digit year such as 2011 
-        private int m_iYear;
-
-        // Month as 1-12 (Jan is 1, Dec is 12) 
-        private int m_iMonth;
-
-        // Day of month as 1-31 
-        private int m_iDay;
-
         // Properties for access (replicates public final in java implementation
-        public int Year
-        {
-            get { return m_iYear; }
-        }
-        public int Month
-        {
-            get { return m_iMonth; }
-        }
-        public int Day
-        {
-            get { return m_iDay; }
-        }
-        
+        public int Year { get; }
+        public int Month { get; }
+        public int Day { get; }
+
         // Private constructor 
         private HDate(int year, int month, int day)
         {
-            m_iYear = year;
-            m_iMonth = month;
-            m_iDay = day;
+            Year = year;
+            Month = month;
+            Day = day;
         }
         // Make implementations
         // Construct from basic fields 
@@ -92,7 +71,7 @@ namespace ProjectHaystack
             }
             return HDate.make(dtParsed.Year, dtParsed.Month, dtParsed.Day);
         }
-        
+
         // Get HDate for current time in default timezone 
         public static HDate today()
         {
@@ -140,7 +119,7 @@ namespace ProjectHaystack
         public HDate plusDays(int numDays)
         {
             if (numDays == 0) return this;
-            if (numDays < 0) return minusDays(numDays*-1);
+            if (numDays < 0) return minusDays(numDays * -1);
             DateTime dtNow = new DateTime(Year, Month, Day);
             DateTime dtPlus = dtNow.AddDays(numDays);
             return make(dtPlus.Year, dtPlus.Month, dtPlus.Day);
@@ -152,7 +131,7 @@ namespace ProjectHaystack
             if (numDays == 0) return this;
             if (numDays < 0) return plusDays(numDays * -1);
             DateTime dtNow = new DateTime(Year, Month, Day);
-            DateTime dtPlus = dtNow.AddDays(numDays*-1);
+            DateTime dtPlus = dtNow.AddDays(numDays * -1);
             return make(dtPlus.Year, dtPlus.Month, dtPlus.Day);
         }
 
@@ -163,7 +142,7 @@ namespace ProjectHaystack
             return (year % 100 != 0) || (year % 400 == 0);
         }
 
-        public DayOfWeek weekday ()
+        public DayOfWeek weekday()
         {
             DateTime now = new DateTime(Year, Month, Day);
             return (now.DayOfWeek);

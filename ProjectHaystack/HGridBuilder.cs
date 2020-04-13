@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -19,19 +18,17 @@ namespace ProjectHaystack
 
     internal class BCol
     {
-        private string m_strName;
-        private HDictBuilder m_meta;
-
         // Access 
-        internal HDictBuilder Meta { get { return m_meta; } }
-        internal string Name { get { return m_strName; } }
-        internal BCol(string name)
-        {
-            m_strName = name;
-            m_meta = new HDictBuilder();
-        }
+        public HDictBuilder Meta { get; }
+        public string Name { get; }
 
+        public BCol(string name)
+        {
+            Name = name;
+            Meta = new HDictBuilder();
+        }
     }
+
     /**
      * HGridBuilder is used to construct an HGrid instance.
      *
@@ -39,10 +36,6 @@ namespace ProjectHaystack
      */
     public class HGridBuilder
     {
-        //////////////////////////////////////////////////////////////////////////
-        // Fields
-        ///////////////////////////////////////////////////////////////////////////
-        private HDictBuilder m_meta;
         private List<BCol> m_cols;
         private List<List<HVal>> m_rows;
 
@@ -50,10 +43,10 @@ namespace ProjectHaystack
         // Important Note on Meta: This grid builder does not fill in any meta data (it 
         //   doesn't have it) access is granted to the instance for external to the grid builder 
         //   for the meta tags to be added externally - Intance/todict is passed to built grids meta
-        public HDictBuilder Meta { get { return m_meta; } }
+        public HDictBuilder Meta { get; }
         public int colCount { get { return m_cols.Count; } }
         public int rowCount { get { return m_rows.Count; } }
-        internal BCol GetColAt (int iIndex)
+        internal BCol GetColAt(int iIndex)
         {
             if (iIndex >= m_cols.Count)
                 return null;
@@ -62,9 +55,9 @@ namespace ProjectHaystack
         //////////////////////////////////////////////////////////////////////////
         // Constructor
         //////////////////////////////////////////////////////////////////////////
-        public HGridBuilder ()
+        public HGridBuilder()
         {
-            m_meta = new HDictBuilder();
+            Meta = new HDictBuilder();
             m_cols = new List<BCol>();
             m_rows = new List<List<HVal>>();
         }
@@ -110,7 +103,7 @@ namespace ProjectHaystack
                 List<List<HVal>> rowListEmpty = new List<List<HVal>>();
                 List<HCol> rowEmpty = new List<HCol>();
                 rowEmpty.Add(colEmpty);
-                return new HGrid( meta, rowEmpty, rowListEmpty);
+                return new HGrid(meta, rowEmpty, rowListEmpty);
             }
 
             HGridBuilder b = new HGridBuilder();
@@ -252,7 +245,7 @@ namespace ProjectHaystack
         public HGrid toGrid()
         {
             // meta
-            HDict meta = m_meta.toDict();
+            HDict meta = Meta.toDict();
 
             // cols
             List<HCol> hcols = new List<HCol>(m_cols.Count);
@@ -265,6 +258,5 @@ namespace ProjectHaystack
             // let HGrid constructor do the rest...
             return new HGrid(meta, hcols, m_rows);
         }
-
     }
 }

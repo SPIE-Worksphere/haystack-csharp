@@ -7,27 +7,24 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
     public class HRow : HDict
     {
-        private HGrid m_grid;
         private List<HVal> m_cells;
+
         // internal constructor
-        internal HRow (HGrid grid, List<HVal> cells) : base(new Dictionary<string, HVal>(11))
+        internal HRow(HGrid grid, List<HVal> cells) : base(new Dictionary<string, HVal>(11))
         {
             m_cells = cells;
-            m_grid = grid;
+            Grid = grid;
         }
 
         //////////////////////////////////////////////////////////////////////////
         // Access 
         //////////////////////////////////////////////////////////////////////////
-        public HGrid Grid { get { return m_grid; } }
+        public HGrid Grid { get; }
 
         // Number of columns in the grid - even thought List<T> will allow
         //   Null values Grid constructor does a number of checks to ensure
@@ -39,15 +36,15 @@ namespace ProjectHaystack
         //   just because it is a possible programming example).
         public override int Size
         {
-            get { return m_grid.numCols; }
+            get { return Grid.numCols; }
         }
-        
+
         // Get a cell by column name.  If the column is undefined or
         //    the cell is null then raise UnknownNameException or return
         //    null based on checked flag. 
         public override HVal get(string name, bool bchecked)
         {
-            HCol col = m_grid.col(name, false);
+            HCol col = Grid.col(name, false);
             if (col != null)
             {
                 HVal val = get(col, bchecked);
@@ -60,10 +57,10 @@ namespace ProjectHaystack
         public override string getKeyAt(int iIndex, bool bChecked)
         {
             string strRet = null;
-            
+
             if (iIndex < Size)
             {
-                HCol col = m_grid.col(iIndex);
+                HCol col = Grid.col(iIndex);
                 strRet = col.Name;
             }
             if ((strRet != null) || (!bChecked))
