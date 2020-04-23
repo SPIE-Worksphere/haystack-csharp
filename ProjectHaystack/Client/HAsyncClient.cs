@@ -261,8 +261,15 @@ namespace ProjectHaystack.Client
     {
       HGridBuilder b = new HGridBuilder();
       b.addCol("filter");
-      b.addCol("limit");
-      b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
+      if(limit > 0)
+      {
+        b.addCol("limit");
+        b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
+      }
+      else
+      {
+        b.addRow(new HVal[] { HStr.make(filter) });
+      }
       HGrid req = b.toGrid();
       return CallAsync("read", req, "text/zinc");
     }
