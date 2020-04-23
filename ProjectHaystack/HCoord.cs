@@ -6,24 +6,21 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Text;
 using System.Globalization;
+using System.Text;
 using ProjectHaystack.io;
 
 namespace ProjectHaystack
 {
     public class HCoord : HVal
     {
-        private int m_ulat;
-        private int m_ulng;
-
         // Private Constructor
-        private HCoord (int ulat, int ulng)
+        private HCoord(int ulat, int ulng)
         {
             if (ulat < -90000000 || ulat > 90000000) throw new ArgumentException("Invalid lat > +/- 90", "ulat");
             if (ulng < -180000000 || ulng > 180000000) throw new ArgumentException("Invalid lng > +/- 180", "ulng");
-            m_ulat = ulat;
-            m_ulng = ulng;
+            this.ulat = ulat;
+            this.ulng = ulng;
         }
 
         // Parse from string fomat "C(lat,lng)" or raise ParseException 
@@ -33,7 +30,7 @@ namespace ProjectHaystack
         }
 
         // Static Make method
-        public static HCoord make (double dblLat, double dblLng)
+        public static HCoord make(double dblLat, double dblLng)
         {
             return new HCoord((int)(dblLat * 1000000.0), (int)(dblLng * 1000000.0));
         }
@@ -59,7 +56,7 @@ namespace ProjectHaystack
         {
             get
             {
-                return (m_ulat / 1000000.0);
+                return (ulat / 1000000.0);
             }
         }
 
@@ -68,22 +65,22 @@ namespace ProjectHaystack
         {
             get
             {
-                return (m_ulng / 1000000.0);
+                return (ulng / 1000000.0);
             }
         }
 
-        public int ulat { get { return m_ulat; } }
-        public int ulng { get { return m_ulng; } }
+        public int ulat { get; }
+        public int ulng { get; }
 
         // Hash is based on lat/lng 
-        public override int GetHashCode() { return (m_ulat << 7) ^ m_ulng; }
+        public override int GetHashCode() { return (ulat << 7) ^ ulng; }
 
         // Equality is based on lat/lng 
         public override bool hequals(object that)
         {
             if (!(that is HCoord)) return false;
             HCoord x = (HCoord)that;
-            return ((m_ulat == x.ulat) && (m_ulng == x.ulng));
+            return ((ulat == x.ulat) && (ulng == x.ulng));
         }
 
         // Return "c:lat,lng" 
@@ -91,9 +88,9 @@ namespace ProjectHaystack
         {
             StringBuilder s = new StringBuilder();
             s.Append("c:");
-            s.Append(uToStr(m_ulat));
+            s.Append(uToStr(ulat));
             s.Append(',');
-            s.Append(uToStr(m_ulng));
+            s.Append(uToStr(ulng));
             return s.ToString();
         }
 
@@ -102,9 +99,9 @@ namespace ProjectHaystack
         {
             StringBuilder s = new StringBuilder();
             s.Append("C(");
-            s.Append(uToStr(m_ulat));
+            s.Append(uToStr(ulat));
             s.Append(',');
-            s.Append(uToStr(m_ulng));
+            s.Append(uToStr(ulng));
             s.Append(')');
             return s.ToString();
         }

@@ -6,10 +6,7 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -20,18 +17,12 @@ namespace ProjectHaystack
      */
     public class HRef : HVal
     {
-        // String identifier for reference 
-        private string m_val;
-
         // Display name for reference or null 
-        private string m_dis;
+        private readonly string m_dis;
 
-        
+
         #region memberAccess
-        public string val
-        {
-            get { return m_val; }
-        }
+        public string val { get; }
         public bool disSet
         {
             get { return (m_dis != null); }
@@ -59,51 +50,51 @@ namespace ProjectHaystack
         }
 
         #endregion // makeFunctions
-        
+
         // Private constructor 
         private HRef(string val, string dis)
         {
-            m_val = val;
+            this.val = val;
             m_dis = dis;
         }
 
         // Hash code is based on val field only 
         public int hashCode()
         {
-            return m_val.GetHashCode();
+            return val.GetHashCode();
         }
 
         // Equals is based on val field only 
         public override bool hequals(object that)
         {
             if (!(that is HRef)) return false;
-            return (m_val.CompareTo(((HRef)that).ToString()) == 0);
+            return (val.CompareTo(((HRef)that).ToString()) == 0);
         }
 
         // Return display string which is dis field if non-null, val field otherwise 
         public string display()
         {
             if (m_dis != null) return m_dis;
-            return m_val;
+            return val;
         }
 
         // Return the val string 
         public override string ToString()
         {
-            return m_val;
+            return val;
         }
 
         // Encode as "@id" 
         public string toCode()
         {
-            return ("@" + m_val);
+            return ("@" + val);
         }
 
         // Encode as "r:<id> [dis]" 
         public override string toJson()
         {
             StringBuilder s = new StringBuilder();
-            s.Append("r:").Append(m_val);
+            s.Append("r:").Append(val);
             if (m_dis != null) s.Append(' ').Append(m_dis);
             return s.ToString();
         }
@@ -113,11 +104,11 @@ namespace ProjectHaystack
         {
             StringBuilder s = new StringBuilder();
             s.Append('@');
-            s.Append(m_val);
+            s.Append(val);
             if (m_dis != null)
             {
                 s.Append(' ');
-                HStr.toZinc(ref s, m_dis); 
+                HStr.toZinc(ref s, m_dis);
             }
             return s.ToString();
         }
@@ -139,15 +130,15 @@ namespace ProjectHaystack
         }
 
         // Singleton for the null ref 
-        public static HRef nullRef = new HRef("null",  null);
+        public static HRef nullRef = new HRef("null", null);
 
         private static bool[] idChars = loadIDChars();
-        private static bool[] loadIDChars ()
+        private static bool[] loadIDChars()
         {
             bool[] bARet = new bool[127];
-            for (int i = 'a'; i<='z'; ++i) bARet[i] = true;
-            for (int i = 'A'; i<='Z'; ++i) bARet[i] = true;
-            for (int i = '0'; i<='9'; ++i) bARet[i] = true;
+            for (int i = 'a'; i <= 'z'; ++i) bARet[i] = true;
+            for (int i = 'A'; i <= 'Z'; ++i) bARet[i] = true;
+            for (int i = '0'; i <= '9'; ++i) bARet[i] = true;
             bARet['_'] = true;
             bARet[':'] = true;
             bARet['-'] = true;

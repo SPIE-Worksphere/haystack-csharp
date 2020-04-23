@@ -6,10 +6,6 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ProjectHaystack.io;
 
 namespace ProjectHaystack
@@ -19,26 +15,20 @@ namespace ProjectHaystack
      *
      * @see <a href='http://project-haystack.org/doc/Ops#hisRead'>Project Haystack</a>
      */
-    
+
     // On project haystack this is not a required type - this toolkit will implement via normal other types unless 
     //   in the development there is found a specific need for such relative 
     public class HDateTimeRange
     {
-        // Inclusive starting timestamp 
-        private HDateTime m_hdtStart;
-
-        // Inclusive ending timestamp 
-        private HDateTime m_hdtEnd;      
-        
         // Access
-        public HDateTime Start { get { return m_hdtStart; } }
-        public HDateTime End { get { return m_hdtEnd; } }
+        public HDateTime Start { get; }
+        public HDateTime End { get; }
 
         // Private constructor 
         private HDateTimeRange(HDateTime start, HDateTime end)
         {
-            m_hdtStart = start;
-            m_hdtEnd = end;
+            Start = start;
+            End = end;
         }
 
         /**
@@ -122,7 +112,7 @@ namespace ProjectHaystack
             HDate today = HDate.today();
             HDate first = HDate.make(today.Year, today.Month, 1);
             HDate last = HDate.make(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
-            return HDateTimeRange.make(first, last, tz);
+            return make(first, last, tz);
         }
 
         /** Make a range which encompasses the current year. */
@@ -131,7 +121,7 @@ namespace ProjectHaystack
             HDate today = HDate.today();
             HDate first = HDate.make(today.Year, 1, 1);
             HDate last = HDate.make(today.Year, 12, 31);
-            return HDateTimeRange.make(first, last, tz);
+            return make(first, last, tz);
         }
 
         /** Make a range which encompasses the previous week.
@@ -142,7 +132,7 @@ namespace ProjectHaystack
             HDate prev = today.minusDays(7);
             HDate sun = prev.minusDays(prev.weekday() - DayOfWeek.Sunday);
             HDate sat = prev.plusDays(DayOfWeek.Saturday - prev.weekday());
-            return HDateTimeRange.make(sun, sat, tz);
+            return make(sun, sat, tz);
         }
 
         /** Make a range which encompasses the previous month. */
@@ -155,7 +145,7 @@ namespace ProjectHaystack
             HDate lastMonth = HDate.make(dtLastMonth.Year, dtLastMonth.Month, dtLastMonth.Day);
             HDate first = HDate.make(lastMonth.Year, lastMonth.Month, 1);
             HDate last = HDate.make(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month));
-            return HDateTimeRange.make(first, last, tz);
+            return make(first, last, tz);
         }
 
         /** Make a range which encompasses the previous year. */
@@ -164,7 +154,7 @@ namespace ProjectHaystack
             HDate today = HDate.today();
             HDate first = HDate.make(today.Year - 1, 1, 1);
             HDate last = HDate.make(today.Year - 1, 12, 31);
-            return HDateTimeRange.make(first, last, tz);
+            return make(first, last, tz);
         }
 
 
@@ -173,6 +163,5 @@ namespace ProjectHaystack
         {
             return Start.ToString() + "," + End.ToString();
         }
-
     }
 }

@@ -6,13 +6,11 @@
 //   1 April 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Text;
-using System.Threading.Tasks;
 using ProjectHaystack.io;
-using System.Collections;
 
 namespace ProjectHaystack
 {
@@ -25,6 +23,7 @@ namespace ProjectHaystack
         private static readonly object padlock = new object();
         private Dictionary<string, HVal> m_map;
         private int m_hashCode;
+
         // Constructor - not a singleton pattern 
         public HDict(Dictionary<string, HVal> map)
         {
@@ -72,7 +71,7 @@ namespace ProjectHaystack
 
         // Return if size is zero
         public bool isEmpty() { return size() == 0; }
-        
+
         // Return if the given tag is present 
         public bool has(string name) { return get(name, false) != null; }
 
@@ -154,6 +153,7 @@ namespace ProjectHaystack
 
         // Get tag as HNum or raise UnknownNameException or ClassCastException. 
         public double getDouble(string name) { return ((HNum)get(name)).doubleval; }
+        public HDef getDef(string name) { return ((HDef)get(name)); }
 
         //////////////////////////////////////////////////////////////////////////
         // Identity
@@ -174,7 +174,7 @@ namespace ProjectHaystack
                     /*Entry entry = (Entry)it.next();
                     Object key = entry.getKey();
                     Object val = entry.getValue();*/
-                    if (val != null) 
+                    if (val != null)
                         x ^= (key.GetHashCode() << 7) ^ val.GetHashCode();
                 }
                 m_hashCode = x;
@@ -209,18 +209,11 @@ namespace ProjectHaystack
          * first char must be ASCII lower case letter.  Rest of
          * chars must be ASCII letter, digit, or underbar.
          */
-         // Replaced with Regex - a lot simplier implementation in regular expressions
-         //   and less looping. Got to love .NET !
+        // Replaced with Regex - a lot simplier implementation in regular expressions
+        //   and less looping. Got to love .NET !
         public static bool isTagName(string n)
         {
-            if (n.Length == 0) return false;
-            int errorCounterWholeString = Regex.Matches(n, @"[^a-zA-Z0-9_]").Count;
-            string first = n.Substring(0, 1);
-            int errorCounterFirst = Regex.Matches(first, @"[^a-z]").Count;
-            if ((errorCounterFirst > 0) || (errorCounterWholeString > 0))
-                return false;
-            else
-                return true;
+            return n != null && Regex.IsMatch(n, @"^[a-z^][a-zA-Z0-9_]*$");
         }
 
         //////////////////////////////////////////////////////////////////////////

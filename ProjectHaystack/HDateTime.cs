@@ -6,11 +6,9 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Globalization;
 
 namespace ProjectHaystack
 {
@@ -26,27 +24,18 @@ namespace ProjectHaystack
      */
     public class HDateTime : HVal
     {
-        // Date component of the timestamp 
-        private HDate m_hdate;
-
-        // Time component of the timestamp 
-        private HTime m_htime;
-
         // Offset in seconds from UTC including DST offset 
         // We will store this in a dn DateTimeOffset as this is what we parse with
         private DateTimeOffset m_dtoParsed;
 
-        // Timezone as Olson database city name 
-        private HTimeZone m_tz;
-
         // Member Access 
-        public HDate date { get { return m_hdate; } }
+        public HDate date { get; }
 
-        public HTime time { get { return m_htime; } }
+        public HTime time { get; }
 
         public TimeSpan Offset { get { return m_dtoParsed.Offset; } }
 
-        public HTimeZone TimeZone { get { return m_tz; } }
+        public HTimeZone TimeZone { get; }
 
         public long Ticks { get { return m_dtoParsed.Ticks; } }
 
@@ -61,20 +50,20 @@ namespace ProjectHaystack
         }
 
         // Private constructor 
-        private HDateTime(HDate date, HTime time, HTimeZone tz )
+        private HDateTime(HDate date, HTime time, HTimeZone tz)
         {
-            m_hdate = date;
-            m_htime = time;
-            m_tz = tz;
+            this.date = date;
+            this.time = time;
+            TimeZone = tz;
             m_dtoParsed = new DateTimeOffset(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second, time.Millisecond, tz.dntz.BaseUtcOffset);
             // NOTE: Here offset is fixed - normal path is through other constructor for a parsed ISO string
         }
         private HDateTime(DateTimeOffset dto, HTimeZone htz)
         {
             m_dtoParsed = dto;
-            m_tz = htz;
-            m_hdate = HDate.make(dto.Year, dto.Month, dto.Day);
-            m_htime = HTime.make(dto.Hour, dto.Minute, dto.Second, dto.Millisecond);
+            TimeZone = htz;
+            date = HDate.make(dto.Year, dto.Month, dto.Day);
+            time = HTime.make(dto.Hour, dto.Minute, dto.Second, dto.Millisecond);
         }
         #region MakeFunctions
 
@@ -150,7 +139,7 @@ namespace ProjectHaystack
                 iPosOfLastSecondChar = iPos - 1;
                 strDateTimeOnly = sCurrent.Substring(0, iPos);
             }
-            else if (sCurrent.Trim().Contains("Z"))  
+            else if (sCurrent.Trim().Contains("Z"))
             {
                 bUTC = true;
                 int iPos = sCurrent.IndexOf('Z');
@@ -167,7 +156,7 @@ namespace ProjectHaystack
             }
             // if it is offset with name then it must have a + or - sign for the offset after the T 
             int iPosOfT = sCurrent.IndexOf('T');
-            if (iPosOfT +1 >= sCurrent.Length)
+            if (iPosOfT + 1 >= sCurrent.Length)
             {
                 // Nothing after 'T' this is not legall
                 if (bException)
@@ -175,7 +164,7 @@ namespace ProjectHaystack
                 else
                     return null;
             }
-            
+
             // Stip of the timezone by finding the space
             iPosOfSpaceBeforeTZID = sCurrent.IndexOf(' ', iPosOfT);
             int iEndLen = iPosOfSpaceBeforeTZID - (iPosOfT + 1);
@@ -222,8 +211,9 @@ namespace ProjectHaystack
                             else
                                 return null;
                         }
-                        int iHour, iMinute = 0;
-                        if (!Int32.TryParse(strHM[0], out iHour))
+
+                        int iHour;
+                        if (!int.TryParse(strHM[0], out iHour))
                         {
                             // Invalid offset
                             if (bException)
@@ -239,7 +229,9 @@ namespace ProjectHaystack
                             else
                                 return null;
                         }
-                        if (!Int32.TryParse(strHM[1], out iMinute))
+
+                        int iMinute;
+                        if (!int.TryParse(strHM[1], out iMinute))
                         {
                             // Invalid offset
                             if (bException)
@@ -265,7 +257,7 @@ namespace ProjectHaystack
                     }
                     else if (iNumOffsetChars == 4)
                     {
-                        int iHour, iMinute = 0;
+                        int iHour;
                         // Assume hhmm
                         if (!Int32.TryParse(strOffset.Substring(0, 2), out iHour))
                         {
@@ -283,7 +275,9 @@ namespace ProjectHaystack
                             else
                                 return null;
                         }
-                        if (!Int32.TryParse(strOffset.Substring(2, 2), out iMinute))
+
+                        int iMinute;
+                        if (!int.TryParse(strOffset.Substring(2, 2), out iMinute))
                         {
                             // Invalid offset
                             if (bException)
@@ -310,9 +304,9 @@ namespace ProjectHaystack
                     else if (iNumOffsetChars == 2)
                     {
                         // Assume hh
-                        int iHour = 0;
+                        int iHour;
                         // Assume hhmm
-                        if (!Int32.TryParse(strOffset, out iHour))
+                        if (!int.TryParse(strOffset, out iHour))
                         {
                             // Invalid offset
                             if (bException)
@@ -342,14 +336,13 @@ namespace ProjectHaystack
                         else
                             return null;
                     }
-                    
+
                 }
                 else
                 {
                     // Must not contain a Zone offset string
                     bNoZoneOffset = true;
                     iPosOfSpaceBeforeTZID = sCurrent.IndexOf(' ', iPosOfT);
-                    iPosOfLastSecondChar = iPosOfSpaceBeforeTZID - 1;
                     strDateTimeOnly = sCurrent.Substring(0, iPosOfSpaceBeforeTZID);
                 }
             }
@@ -389,9 +382,11 @@ namespace ProjectHaystack
                     throw new FormatException("Invalid DateTime format for string " + s);
                 else return null;
             }
-            HTimeZone htz = null;
+            HTimeZone htz;
             if (bUTC)
+            {
                 htz = HTimeZone.UTC;
+            }
             else
             {
                 try
@@ -419,16 +414,6 @@ namespace ProjectHaystack
             return make(DateTime.Now.Ticks);
         }
 
-        private static int parseOffset(string s)
-        {
-            if (s.Length != "-HH:MM".Length) throw new FormatException("Invalid tz offset: " + s);
-            int sign = s[0] == ('-') ? -1 : 1;
-            int tzHours = int.Parse(s.Substring(1, 3));
-            if (s[3] != ':') throw new FormatException("Invalid tz offset: " + s);
-            int tzMins = int.Parse(s.Substring(4));
-            return sign * (tzHours * 3600) + (tzMins * 60);
-        }
-
         #endregion // MakeFunctions
 
         // Encode as "t:YYYY-MM-DD'T'hh:mm:ss.FFFz zzzz" 
@@ -451,14 +436,14 @@ namespace ProjectHaystack
             if (!(obj is HDateTime)) return false;
             HDateTime x = (HDateTime)obj;
             return (date.hequals(x.date) && time.hequals(x.time) &&
-                   m_dtoParsed.Offset == x.Offset && m_tz.hequals(x.TimeZone));
+                   m_dtoParsed.Offset == x.Offset && TimeZone.hequals(x.TimeZone));
         }
 
         public override string ToString()
         {
             string strRet = "";
             strRet = m_dtoParsed.ToString("yyyy-MM-dd'T'HH:mm:ss.FFF");
-            if (m_tz.ToString() == "UTC")
+            if (TimeZone.ToString() == "UTC")
             {
                 strRet += "Z UTC";
                 return strRet;
@@ -469,11 +454,11 @@ namespace ProjectHaystack
                 strRet += "-";
             strRet += m_dtoParsed.Offset.ToString(@"hh\:mm");
             strRet += " ";
-            strRet += m_tz.ToString();
+            strRet += TimeZone.ToString();
             return strRet;
         }
 
-        public int CompareTo (HDateTime that)
+        public int CompareTo(HDateTime that)
         {
             // Original Java compared millis which is the milliseconds sicne epoch at UTC
             //   equivalent for C# = compare the datetime offset for UTC 

@@ -60,6 +60,7 @@ namespace ProjectHaystackTest
             Assert.IsFalse(HDict.isTagName("a\u0128"));
             Assert.IsFalse(HDict.isTagName("a\u0129x"));
             Assert.IsFalse(HDict.isTagName("a\uabcdx"));
+            Assert.IsTrue(HDict.isTagName("^tag"));
         }
 
         [TestMethod]
@@ -168,5 +169,11 @@ namespace ProjectHaystackTest
             Assert.AreEqual(new HDictBuilder().add("id", HRef.make("a")).add("dis", "d").toDict().dis(), "d");
         }
 
+        [TestMethod]
+        public void testDef()
+        {
+            Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().getDef("def").ToString(), "^a");
+            Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().toString(), "{def:^a}");
+        }
     }
 }

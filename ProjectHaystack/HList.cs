@@ -6,17 +6,16 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
     /**
      * HList is a list of HVal items.
      */
-    public class HList : HVal
+    public class HList : HVal, IEnumerable<HVal>
     {
         //////////////////////////////////////////////////////////////////////////
         // Private Constructor
@@ -59,7 +58,9 @@ namespace ProjectHaystack
         // Get the HVal at the given index 
         public HVal get(int i) { return m_lstItems[i]; }
 
-        public bool CompareItems (List<HVal> items)
+        public HVal this[int i] => m_lstItems[i];
+
+        public bool CompareItems(List<HVal> items)
         {
             if (items.Count != m_lstItems.Count) return false;
             // Can't compare with Compare or All methods as this does not implement IComparable
@@ -113,11 +114,14 @@ namespace ProjectHaystack
             return m_lstItems.GetHashCode();
         }
 
+        public IEnumerator<HVal> GetEnumerator() => m_lstItems.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => m_lstItems.GetEnumerator();
+
         //////////////////////////////////////////////////////////////////////////
         // List
         //////////////////////////////////////////////////////////////////////////
 
         private List<HVal> m_lstItems;
-
     }
 }
