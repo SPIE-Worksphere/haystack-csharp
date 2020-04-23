@@ -21,10 +21,10 @@ namespace ProjectHaystack
         private HNA() { }
 
         // Hash code 
-        public int hashCode() { return 0x6e61; }
+        public override int GetHashCode() => 0x6e61;
 
         // Equals is based on reference 
-        public override bool hequals(object that) { return this == that; }
+        public override bool Equals(object that) => this == that;
 
         // Encode as "na" 
         public override string ToString() { return "na"; }
@@ -34,6 +34,5 @@ namespace ProjectHaystack
 
         // Encode as "NA" 
         public override string toZinc() { return "NA"; }
-
     }
 }

@@ -7,17 +7,22 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectHaystack
 {
     public class HRow : HDict
     {
         private List<HVal> m_cells;
+        private Lazy<IDictionary<string, int>> m_lazyKeyIndexes;
 
-        // internal constructor
+        // Internal constructor
         internal HRow(HGrid grid, List<HVal> cells) : base(new Dictionary<string, HVal>(11))
         {
             m_cells = cells;
+            m_lazyKeyIndexes = new Lazy<IDictionary<string, int>>(() =>
+                Enumerable.Range(0, grid.numCols)
+                    .ToDictionary(idx => grid.col(idx).Name, idx => idx));
             Grid = grid;
         }
 
@@ -26,65 +31,18 @@ namespace ProjectHaystack
         //////////////////////////////////////////////////////////////////////////
         public HGrid Grid { get; }
 
-        // Number of columns in the grid - even thought List<T> will allow
-        //   Null values Grid constructor does a number of checks to ensure
-        //   unique name and other checks particularly on Column - this means
-        //   it assumes none are HCol null values (null values bypass the checking).  
-        //   So the reality is null is not allowed in the code logic.
-        //   Null is allowed in the haystack.org docs but I don't see an example
-        //   and can't think of a practical example in it's use (think it was added
-        //   just because it is a possible programming example).
-        public override int Size
+        protected override HVal GetValue(string key) =>
+            m_lazyKeyIndexes.Value.ContainsKey(key) ? m_cells[m_lazyKeyIndexes.Value[key]] : null;
+
+        protected override void SetValue(string key, HVal value)
         {
-            get { return Grid.numCols; }
+            if (!m_lazyKeyIndexes.Value.ContainsKey(key))
+                throw new UnknownNameException(key);
+            m_cells[m_lazyKeyIndexes.Value[key]] = value;
         }
 
-        // Get a cell by column name.  If the column is undefined or
-        //    the cell is null then raise UnknownNameException or return
-        //    null based on checked flag. 
-        public override HVal get(string name, bool bchecked)
-        {
-            HCol col = Grid.col(name, false);
-            if (col != null)
-            {
-                HVal val = get(col, bchecked);
-                if (val != null) return val;
-            }
-            if (bchecked) throw new UnknownNameException(name);
-            return null;
-        }
+        protected override ICollection<HVal> GetValues() => m_cells;
 
-        public override string getKeyAt(int iIndex, bool bChecked)
-        {
-            string strRet = null;
-
-            if (iIndex < Size)
-            {
-                HCol col = Grid.col(iIndex);
-                strRet = col.Name;
-            }
-            if ((strRet != null) || (!bChecked))
-                return strRet;
-            else
-                throw new IndexOutOfRangeException(iIndex.ToString() + " out of range");
-        }
-
-        // Get a cell by column.  If cell is null then raise
-        //    UnknownNameException or return  null based on checked flag. 
-        public HVal get(HCol col, bool bchecked)
-        {
-            HVal val = m_cells[col.Index];
-            if (val != null) return val;
-            // Ian Davies - .NET port - this could cause a unknown name exception
-            //              for a null value - back to previous comment
-            if (bchecked) throw new UnknownNameException(col.Name);
-            return null;
-        }
-
-        /* Iterator - removed as it is not needed
-        public IEnumerable<HRow> iterator
-        {
-            get { return m_grid.iterator(); }
-        } */
+        protected override ICollection<string> GetKeys() => m_lazyKeyIndexes.Value.Keys;
     }
 }

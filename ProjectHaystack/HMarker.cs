@@ -24,13 +24,12 @@ namespace ProjectHaystack
         }
 
         // Hash code 
-        public int hashCode() { return 0x1379de; }
+        public override int GetHashCode() { return 0x1379de; }
 
         // Equals is based on reference 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (!(that is HMarker)) return false;
-            return (this == (HMarker)that);
+            return that is HMarker && this == (HMarker)that;
         }
 
         // Encode as "marker" 

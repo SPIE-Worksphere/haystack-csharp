@@ -18,10 +18,11 @@ namespace ProjectHaystack
             return new HDef(val);
         }
 
-        public override bool hequals(object obj)
+        public override int GetHashCode() => m_val.GetHashCode();
+
+        public override bool Equals(object obj)
         {
-            if (!(obj is HDef)) return false;
-            return (m_val.CompareTo(((HDef)obj).ToString()) == 0);
+            return obj is HDef && m_val.Equals(((HDef)obj).m_val);
         }
 
         public override string toJson()

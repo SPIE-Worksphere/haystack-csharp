@@ -6,11 +6,8 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Globalization;
+using System.Text;
 
 namespace ProjectHaystack
 {
@@ -19,7 +16,7 @@ namespace ProjectHaystack
      *
      * @see <a href='http://project-haystack.org/doc/TagModel#tagKinds'>Project Haystack</a>
      */
-    public class HTime : HVal 
+    public class HTime : HVal
     {
         // Hour of day as 0-23 
         private int m_iHour;
@@ -97,7 +94,7 @@ namespace ProjectHaystack
                 else if ((strToConv.Length - iDotPos < 4) && (strToConv.Length < 12))
                 {
                     // HH:mm:ss.ff
-                    int iAddZeros = 3- (strToConv.Length - iDotPos - 1);
+                    int iAddZeros = 3 - (strToConv.Length - iDotPos - 1);
                     for (int i = 0; i < iAddZeros; i++)
                         strToConv += '0';
                 }
@@ -122,13 +119,13 @@ namespace ProjectHaystack
         public static readonly HTime MIDNIGHT = new HTime(0, 0, 0, 0);
 
         // Hash is based on hour, min, sec, ms 
-        public int hashCode()
+        public override int GetHashCode()
         {
             return (m_iHour << 24) ^ (m_iMin << 20) ^ (m_iSec << 16) ^ m_ims;
         }
 
         // Equals is based on year, month, day 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
             if (!(that is HTime)) return false;
             HTime x = (HTime)that;
@@ -186,6 +183,5 @@ namespace ProjectHaystack
                 s.Append(Millisecond);
             }
         }
-
     }
 }

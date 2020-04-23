@@ -59,16 +59,12 @@ namespace ProjectHaystack
         }
 
         // Hash code is based on val field only 
-        public int hashCode()
-        {
-            return val.GetHashCode();
-        }
+        public override int GetHashCode() => val.GetHashCode();
 
         // Equals is based on val field only 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (!(that is HRef)) return false;
-            return (val.CompareTo(((HRef)that).ToString()) == 0);
+            return that is HRef && val.Equals(((HRef)that).val);
         }
 
         // Return display string which is dis field if non-null, val field otherwise 

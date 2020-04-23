@@ -147,7 +147,8 @@ namespace ProjectHaystack
             return (HJsonWriter.valToString(this));
         }
 
-        public override bool hequals(object o)
+        public override int GetHashCode() => Cols.Aggregate(0, (x, col) => x ^ col.GetHashCode());
+        public override bool Equals(object o)
         {
             // Instance check
             if (o.Equals(this)) return true;

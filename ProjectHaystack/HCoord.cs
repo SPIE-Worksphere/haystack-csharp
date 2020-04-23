@@ -73,14 +73,12 @@ namespace ProjectHaystack
         public int ulng { get; }
 
         // Hash is based on lat/lng 
-        public override int GetHashCode() { return (ulat << 7) ^ ulng; }
+        public override int GetHashCode() => (ulat << 7) ^ ulng;
 
         // Equality is based on lat/lng 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (!(that is HCoord)) return false;
-            HCoord x = (HCoord)that;
-            return ((ulat == x.ulat) && (ulng == x.ulng));
+            return that is HCoord && ulat == ((HCoord)that).ulat && ulng == ((HCoord)that).ulng;
         }
 
         // Return "c:lat,lng" 

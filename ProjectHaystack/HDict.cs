@@ -21,14 +21,15 @@ namespace ProjectHaystack
         //   that is an empty set of tags
         private static HDict m_dictInstanceEmpty = null;
         private static readonly object padlock = new object();
-        private Dictionary<string, HVal> m_map;
-        private int m_hashCode;
+        private readonly Dictionary<string, HVal> m_map;
+        private Lazy<int> m_hashCode;
 
         // Constructor - not a singleton pattern 
         public HDict(Dictionary<string, HVal> map)
         {
-            m_hashCode = 0;
             m_map = map;
+            m_hashCode = new Lazy<int>(()
+                => this.Aggregate(33, (x, kv) => x ^= (kv.Key.GetHashCode() << 7) ^ kv.Value.GetHashCode()));
         }
 
         // Singleton pattern to single instance of empty
@@ -52,80 +53,60 @@ namespace ProjectHaystack
         //////////////////////////////////////////////////////////////////////////
 
         // return number of pairs - should be overriden in derived classes
-        public virtual int Size { get { return m_map.Count; } }
+        public virtual int Size => GetValues().Count;
 
-        public ICollection<string> Keys => ((IDictionary<string, HVal>)m_map).Keys;
+        public ICollection<string> Keys => GetKeys();
 
-        public ICollection<HVal> Values => ((IDictionary<string, HVal>)m_map).Values;
+        public ICollection<HVal> Values => GetValues();
 
-        public int Count => ((IDictionary<string, HVal>)m_map).Count;
+        public int Count => Size;
 
-        public bool IsReadOnly => ((IDictionary<string, HVal>)m_map).IsReadOnly;
+        public virtual bool IsReadOnly => ((ICollection<HVal>)m_map).IsReadOnly;
 
-        public HVal this[string key] { get => ((IDictionary<string, HVal>)m_map)[key]; set => ((IDictionary<string, HVal>)m_map)[key] = value; }
+        public HVal this[string key] { get => GetValue(key); set => SetValue(key, value); }
 
-        public virtual int size()
-        {
-            return Size;
-        }
+        public virtual int size() => Size;
 
         // Return if size is zero
-        public bool isEmpty() { return size() == 0; }
+        public bool isEmpty() => Size == 0;
 
         // Return if the given tag is present 
-        public bool has(string name) { return get(name, false) != null; }
+        public bool has(string name) => get(name, false) != null;
 
         // Return if the given tag is not present 
-        public bool missing(string name) { return get(name, false) == null; }
+        public bool missing(string name) => !has(name);
 
-        public virtual HVal get(string name) { return get(name, true); }
+        public virtual HVal get(string name) => get(name, true);
+
+        public virtual HVal get(HCol col, bool bChecked) => get(col.Name, bChecked);
 
         public virtual HVal get(string strName, bool bChecked)
         {
-            HVal val = null;
-            if (m_map.ContainsKey(strName))
-                val = m_map[strName];
-            if ((val != null) || (!bChecked))
-                return val;
-            else
-                throw new UnknownNameException(strName);
-
+            HVal val = GetValue(strName);
+            return val != null || !bChecked
+                ? val
+                : throw new UnknownNameException(strName);
         }
-
-        // NOTE: there is no equivalent of an iterator for a Dictionary object
-        //       best equivalent is to access by index hence the next two methods are
-        //       a replacement of that
 
         public HVal getVal(int iIndex, bool bChecked)
         {
-            HVal val = null;
-            if (iIndex < Size)
-            {
-                KeyValuePair<string, HVal> item = m_map.ElementAt(iIndex);
-                val = item.Value;
-            }
-            if ((val != null) || (!bChecked))
-                return val;
-            else
+            if ((iIndex < 0 || iIndex > Size) && bChecked)
                 throw new IndexOutOfRangeException(iIndex.ToString() + " out of range");
+            return get(Keys.ElementAt(iIndex), bChecked);
         }
 
         public virtual string getKeyAt(int iIndex, bool bChecked)
         {
-            string strRet = null;
-            if (iIndex < Size)
-            {
-                KeyValuePair<string, HVal> item = m_map.ElementAt(iIndex);
-                strRet = item.Key;
-            }
-            if ((strRet != null) || (!bChecked))
-                return strRet;
-            else
-                throw new IndexOutOfRangeException(iIndex.ToString() + " out of range");
+            if (iIndex < 0 || iIndex > Size)
+                if (bChecked)
+                    throw new IndexOutOfRangeException(iIndex.ToString() + " out of range");
+                else
+                    return null;
+            return Keys.ElementAt(iIndex);
         }
 
         // access HRef
-        public HRef id() { return getRef("id"); }
+        public HRef id() => getRef("id");
 
         // dis 
         public string dis()
@@ -140,20 +121,21 @@ namespace ProjectHaystack
         // Get Conveniences
         //////////////////////////////////////////////////////////////////////////
         // Get tag as HBool or raise UnknownNameException or ClassCastException. 
-        public bool getBool(string name) { return ((HBool)get(name)).val; }
+        public bool getBool(string name) => ((HBool)get(name)).val;
 
         // Get tag as HStr or raise UnknownNameException or ClassCastException. 
-        public string getStr(string name) { return ((HStr)get(name)).Value; }
+        public string getStr(string name) => ((HStr)get(name)).Value;
 
         // Get tag as HRef or raise UnknownNameException or ClassCastException. 
-        public HRef getRef(string name) { return (HRef)get(name); }
+        public HRef getRef(string name) => (HRef)get(name);
 
         // Get tag as HNum or raise UnknownNameException or ClassCastException. 
-        public int getInt(string name) { return (int)((HNum)get(name)).doubleval; }
+        public int getInt(string name) => (int)((HNum)get(name)).doubleval;
 
         // Get tag as HNum or raise UnknownNameException or ClassCastException. 
-        public double getDouble(string name) { return ((HNum)get(name)).doubleval; }
-        public HDef getDef(string name) { return ((HDef)get(name)); }
+        public double getDouble(string name) => ((HNum)get(name)).doubleval;
+
+        public HDef getDef(string name) => ((HDef)get(name));
 
         //////////////////////////////////////////////////////////////////////////
         // Identity
@@ -162,28 +144,10 @@ namespace ProjectHaystack
         public string toString() { return toZinc(); }
 
         // Hash code is based on tags 
-        public int hashCode()
-        {
-            if (m_hashCode == 0)
-            {
-                int x = 33;
-                for (int it = 0; it < size(); it++)
-                {
-                    string key = getKeyAt(it, false);
-                    HVal val = getVal(it, false);
-                    /*Entry entry = (Entry)it.next();
-                    Object key = entry.getKey();
-                    Object val = entry.getValue();*/
-                    if (val != null)
-                        x ^= (key.GetHashCode() << 7) ^ val.GetHashCode();
-                }
-                m_hashCode = x;
-            }
-            return m_hashCode;
-        }
+        public override int GetHashCode() => m_hashCode.Value;
 
         // Equality is tags same Dict with same contents
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
             if (!(that is HDict)) return false;
             HDict x = (HDict)that;
@@ -286,6 +250,15 @@ namespace ProjectHaystack
         {
             return ((IDictionary<string, HVal>)m_map).GetEnumerator();
         }
+
+        protected virtual ICollection<string> GetKeys() => m_map.Keys;
+
+        protected virtual ICollection<HVal> GetValues() => m_map.Values;
+
+        protected virtual HVal GetValue(string key) => m_map.ContainsKey(key) ? m_map[key] : null;
+
+        protected virtual void SetValue(string key, HVal value) => m_map[key] = value;
+
 
         //////////////////////////////////////////////////////////////////////////
         // MapImpl - I see no benefit to this and is not defined in Haystack
