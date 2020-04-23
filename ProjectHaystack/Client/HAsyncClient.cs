@@ -261,8 +261,15 @@ namespace ProjectHaystack.Client
     {
       HGridBuilder b = new HGridBuilder();
       b.addCol("filter");
-      b.addCol("limit");
-      b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
+      if(limit > 0)
+      {
+        b.addCol("limit");
+        b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
+      }
+      else
+      {
+        b.addRow(new HVal[] { HStr.make(filter) });
+      }
       HGrid req = b.toGrid();
       return CallAsync("read", req, "text/zinc");
     }
@@ -439,6 +446,12 @@ namespace ProjectHaystack.Client
       HDict meta = new HDictBuilder().add("id", id).toDict();
       HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
       call("hisWrite", req, "text/zinc");
+    }
+    public Task<HGrid> hisWriteAsync(HRef id, HHisItem[] items)
+    {
+      HDict meta = new HDictBuilder().add("id", id).toDict();
+      HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
+      return CallAsync("hisWrite", req, "text/zinc");
     }
     #endregion // AddedFromJavaRegionHistory
 

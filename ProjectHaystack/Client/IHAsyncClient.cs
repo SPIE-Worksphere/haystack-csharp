@@ -10,5 +10,6 @@ namespace ProjectHaystack.Client
         Task<string> PostStringAsync(string op, string req, string mimeRequest = "text/zinc", string mimeResponse = "text/zinc");
         Task<HGrid> readAllAsync(string filter, int limit);
         Task<HDict> readAsync(string filter, bool bChecked);
+        Task<HGrid> hisWriteAsync(HRef id, HHisItem[] items);
     }
 }
