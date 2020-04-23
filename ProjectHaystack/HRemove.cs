@@ -5,11 +5,6 @@
 // History:
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -26,10 +21,10 @@ namespace ProjectHaystack
         private HRemove() { }
 
         // Hash code 
-        public int hashCode() { return 0x8ab3; }
+        public override int GetHashCode() { return 0x8ab3; }
 
         // Equals is based on reference 
-        public override bool hequals(object that) { return this == that; }
+        public override bool Equals(object that) { return this == that; }
 
         // Encode as "remove" 
         public override string ToString() { return "remove"; }

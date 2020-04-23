@@ -6,10 +6,7 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -27,7 +24,7 @@ namespace ProjectHaystack
 
         // Access
         public string UriVal { get { return m_strVal; } }
-        
+
         // Construct from string value 
         public static HUri make(string val)
         {
@@ -39,16 +36,12 @@ namespace ProjectHaystack
         private static HUri EMPTY = new HUri("");
 
         // Hash code is based on string value 
-        public int hashCode()
-        {
-            return m_strVal.GetHashCode();
-        }
+        public override int GetHashCode() => m_strVal.GetHashCode();
 
         // Equals is based on string value 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (!(that is HUri)) return false;
-            return (m_strVal.CompareTo(((HUri)that).UriVal) == 0);
+            return that is HUri && m_strVal.CompareTo(((HUri)that).UriVal) == 0;
         }
 
         // Return value string. 

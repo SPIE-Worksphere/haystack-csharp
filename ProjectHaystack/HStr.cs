@@ -6,10 +6,7 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -17,12 +14,11 @@ namespace ProjectHaystack
     {
         // Singleton Instance for empty instance
         private static HStr m_emptyInst;
-        // Member value
-        private string m_strVal;
+
         // Constructor
         protected HStr(string val)
         {
-            m_strVal = val;
+            Value = val;
         }
         // Access to Instance empty
         public static HStr InstanceEmpty
@@ -37,36 +33,34 @@ namespace ProjectHaystack
             }
         }
         // access to HStr
-        public static HStr make (string val)
+        public static HStr make(string val)
         {
             if (val == null) return null;
             if (val.Length == 0) return InstanceEmpty;
             return (new HStr(val));
         }
         // Access to internal string value
-        public string Value
-        {
-            get { return m_strVal; }
-        }
+        public string Value { get; }
 
+        public override int GetHashCode() => Value.GetHashCode();
         // HVal hequals
-        public override bool hequals (object that)
+        public override bool Equals(object that)
         {
             if (!(that is HStr)) return false;
-            if (((HStr)that).Value == m_strVal) return true;
+            if (((HStr)that).Value == Value) return true;
             else return false;
         }
 
         public override string ToString()
         {
-            return m_strVal;
+            return Value;
         }
 
         // HVal toJson
         // If it contains a colon retunr s:<value> else just the value
         public override string toJson()
         {
-            return m_strVal.IndexOf(':') < 0 ? m_strVal : "s:" + m_strVal;
+            return Value.IndexOf(':') < 0 ? Value : "s:" + Value;
         }
 
         // Encode using double quotes and back slash escapes 
@@ -96,9 +90,9 @@ namespace ProjectHaystack
                     sb.Append('\\');
                     switch (c)
                     {
-                        case ('\n'): { sb.Append('n'); }  break;
-                        case ('\r'): { sb.Append('r'); }  break;
-                        case ('\t'): { sb.Append('t'); }  break;
+                        case ('\n'): { sb.Append('n'); } break;
+                        case ('\r'): { sb.Append('r'); } break;
+                        case ('\t'): { sb.Append('t'); } break;
                         case ('"'): { sb.Append('"'); } break;
                         case ('\\'): { sb.Append('\\'); } break;
                         default:
@@ -119,7 +113,7 @@ namespace ProjectHaystack
         }
 
         // I have not implemented custom split - I don't see why it is required except it has a Trim included
-        public static string[] customSplitWithTrim (string str, char[] cSeps, bool bEmpty)
+        public static string[] customSplitWithTrim(string str, char[] cSeps, bool bEmpty)
         {
             string[] strARet = null;
             if (bEmpty)
@@ -129,7 +123,6 @@ namespace ProjectHaystack
             for (int i = 0; i < strARet.Length; i++)
                 strARet[i] = strARet[i].Trim();
             return strARet;
-        } 
-
+        }
     }
 }

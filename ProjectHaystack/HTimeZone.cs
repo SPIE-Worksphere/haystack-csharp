@@ -7,10 +7,7 @@
 //                              Note: This uses Nuget package TimeZoneConverter
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -30,9 +27,6 @@ namespace ProjectHaystack
         // Haystack timezone name 
         private string m_strName;
 
-        // .NET representation of this timezone. 
-        private TimeZoneInfo m_dntz;
-        
         // Map of Name and Tz
         // cache
 
@@ -40,7 +34,7 @@ namespace ProjectHaystack
         private HTimeZone(string name, TimeZoneInfo dntz)
         {
             m_strName = name;
-            m_dntz = dntz;
+            this.dntz = dntz;
         }
 
         #region MakeFunctions
@@ -97,7 +91,7 @@ namespace ProjectHaystack
                 }
                 else
                 {
-                    
+
                     if (bChecked)
                     {
                         throw new ArgumentException("Name " + name + " not found as valid IANA timezone", "name");
@@ -205,7 +199,7 @@ namespace ProjectHaystack
                 return false;
         }
 
-        public TimeZoneInfo dntz {  get { return m_dntz; } }
+        public TimeZoneInfo dntz { get; }
 
         public static HTimeZone UTC
         {
@@ -260,7 +254,5 @@ namespace ProjectHaystack
                 return htzRet;
             }
         }
-
     }
-
 }

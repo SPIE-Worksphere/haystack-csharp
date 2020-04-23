@@ -97,7 +97,9 @@ namespace ProjectHaystack
             throw new NotImplementedException();
         }
 
-        public override bool hequals(object o)
+        public override int GetHashCode() => m_lstItems.GetHashCode();
+
+        public override bool Equals(object o)
         {
             if (this == o) return true;
             if (o == null || GetType() != o.GetType() || !(o is HList)) return false;
@@ -105,13 +107,6 @@ namespace ProjectHaystack
             HList ohlist = (HList)o;
 
             return ohlist.CompareItems(m_lstItems);
-        }
-
-        public int hashCode()
-        {
-            // NOTE: Would not rely on this for unique key - it is too underminable.
-            //  this is only left in for documentation.
-            return m_lstItems.GetHashCode();
         }
 
         public IEnumerator<HVal> GetEnumerator() => m_lstItems.GetEnumerator();

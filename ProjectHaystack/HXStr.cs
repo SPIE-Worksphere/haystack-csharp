@@ -78,7 +78,9 @@ namespace ProjectHaystack
             throw new NotImplementedException();
         }
 
-        public override bool hequals(object o)
+        public override int GetHashCode() => m_strType.GetHashCode() ^ m_strVal.GetHashCode();
+
+        public override bool Equals(object o)
         {
             // Reference check
             if (this == o) return true;

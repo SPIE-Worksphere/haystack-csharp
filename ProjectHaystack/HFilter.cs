@@ -6,8 +6,8 @@
 //   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using ProjectHaystack.io;
@@ -133,14 +133,16 @@ namespace ProjectHaystack
         protected abstract string toStr();
 
         /** Hash code is based on string encoding */
-        public int hashCode() { return ToString().GetHashCode(); }
+        public int hashCode() => GetHashCode();
+
+        public override int GetHashCode() => ToString().GetHashCode();
 
         /** Equality is based on string encoding */
-        public bool hequals(object that)
+        public bool hequals(object that) => Equals(that);
+
+        public override bool Equals(object that)
         {
-            if (!(that is HFilter)) return false;
-            HFilter filthat = (HFilter)that;
-            return (ToString().CompareTo(filthat.ToString()) == 0);
+            return that is HFilter && ToString().Equals(that.ToString());
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -181,7 +183,7 @@ namespace ProjectHaystack
                     List<string> acc = new List<string>();
                     while (true)
                     {
-                        string n = path.Substring(s, dash-s);
+                        string n = path.Substring(s, dash - s);
                         if (n.Length == 0) throw new Exception();
                         acc.Add(n);
                         if (path.ElementAt(dash + 1) != '>') throw new Exception();
@@ -189,7 +191,7 @@ namespace ProjectHaystack
                         dash = path.IndexOf('-', s);
                         if (dash < 0)
                         {
-                            n = path.Substring(s, path.Length-s); 
+                            n = path.Substring(s, path.Length - s);
                             if (n.Length == 0) throw new Exception();
                             acc.Add(n);
                             break;
@@ -244,14 +246,14 @@ namespace ProjectHaystack
             {
                 return m_strName;
             }
-            
+
         }
 
         public class PathN : Path
         {
             private string m_str;
             private string[] m_strNames;
-            public PathN(string s, string [] n)
+            public PathN(string s, string[] n)
             {
                 m_str = s;
                 m_strNames = n;
@@ -314,7 +316,7 @@ namespace ProjectHaystack
 
         public class Has : PathFilter
         {
-            public Has(Path p) :base(p)
+            public Has(Path p) : base(p)
             {
                 m_path = p;
             }
@@ -334,7 +336,7 @@ namespace ProjectHaystack
 
         public class Missing : PathFilter
         {
-            public Missing(Path p) : base (p)
+            public Missing(Path p) : base(p)
             {
                 m_path = p;
             }
@@ -385,7 +387,7 @@ namespace ProjectHaystack
 
         public class Eq : CmpFilter
         {
-            public Eq(Path p, HVal v) : base (p, v)
+            public Eq(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -406,7 +408,7 @@ namespace ProjectHaystack
 
         public class Ne : CmpFilter
         {
-            public Ne(Path p, HVal v) : base (p, v)
+            public Ne(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -427,7 +429,7 @@ namespace ProjectHaystack
 
         public class Lt : CmpFilter
         {
-            public Lt(Path p, HVal v) : base (p, v)
+            public Lt(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -451,7 +453,7 @@ namespace ProjectHaystack
 
         public class Le : CmpFilter
         {
-            public Le(Path p, HVal v) : base (p, v)
+            public Le(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -475,7 +477,7 @@ namespace ProjectHaystack
 
         public class Gt : CmpFilter
         {
-            public Gt(Path p, HVal v) : base (p, v)
+            public Gt(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -499,7 +501,7 @@ namespace ProjectHaystack
 
         public class Ge : CmpFilter
         {
-            public Ge(Path p, HVal v) : base (p, v)
+            public Ge(Path p, HVal v) : base(p, v)
             {
                 m_path = p;
                 m_val = v;
@@ -555,7 +557,7 @@ namespace ProjectHaystack
 
         public class And : CompoundFilter
         {
-            public And(HFilter a, HFilter b) : base (a, b)
+            public And(HFilter a, HFilter b) : base(a, b)
             {
                 m_a = a;
                 m_b = b;
@@ -576,7 +578,7 @@ namespace ProjectHaystack
 
         public class Or : CompoundFilter
         {
-            public Or(HFilter a, HFilter b) : base (a, b)
+            public Or(HFilter a, HFilter b) : base(a, b)
             {
                 m_a = a;
                 m_b = b;
@@ -741,8 +743,6 @@ namespace ProjectHaystack
             }
             // Kept for sake of making it as close to Java toolkit but fail to see the value it adds
             private FormatException err(string msg) { return new FormatException(msg); }
-
-
-        }    
+        }
     }
 }

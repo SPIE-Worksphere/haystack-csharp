@@ -46,11 +46,13 @@ namespace ProjectHaystack
         // Hash code is not needed for .NET - see notes in HDict
 
         // Equality is name and meta 
-        public bool hequals(object that)
+        public bool hequals(object that) => Equals(that);
+
+        public override int GetHashCode() => Name.GetHashCode() ^ meta.GetHashCode();
+
+        public override bool Equals(object that)
         {
-            if (!(that is HCol)) return false;
-            HCol x = (HCol)that;
-            return ((Name.Equals(x.Name)) && (meta.hequals(x.meta)));
+            return that is HCol && Name.Equals(((HCol)that).Name) && meta.hequals(((HCol)that).meta);
         }
     }
 }

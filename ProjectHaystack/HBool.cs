@@ -31,17 +31,12 @@ namespace ProjectHaystack
             return (new HBool(bVal));
         }
         // Hash code is same as java.lang.Boolean 
-        public int hashCode()
-        {
-            return val.GetHashCode();
-        }
+        public override int GetHashCode() => val.GetHashCode();
 
         // Equals is based on reference 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (that is HBool)
-                return (val == ((HBool)that).val);
-            else return false;
+            return that is HBool && val == ((HBool)that).val;
         }
 
         public bool val { get; }

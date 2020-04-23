@@ -87,7 +87,7 @@ namespace ProjectHaystack
         public static HNum NaN = new HNum(double.NaN, null);
 
         // Hash code is based on val and unit member variables
-        public int hashCode()
+        public override int GetHashCode()
         {
 
             long lValAsLong = BitConverter.DoubleToInt64Bits(doubleval);
@@ -98,7 +98,7 @@ namespace ProjectHaystack
         }
 
         // Equals is based on val and unit (NaN == NaN) 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
             if (!(that is HNum)) return false;
             HNum x = (HNum)that;

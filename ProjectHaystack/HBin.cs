@@ -38,16 +38,12 @@ namespace ProjectHaystack
 
 
         // Hash code is based on mime field 
-        public int hashCode()
-        {
-            return mime.GetHashCode();
-        }
+        public override int GetHashCode() => mime.GetHashCode();
 
         // Equals is based on mime field 
-        public override bool hequals(object that)
+        public override bool Equals(object that)
         {
-            if (!(that is HBin)) return false;
-            return mime.Equals(((HBin)that).mime);
+            return that is HBin && mime.Equals(((HBin)that).mime);
         }
 
         // Encode as "b:<mime>" 

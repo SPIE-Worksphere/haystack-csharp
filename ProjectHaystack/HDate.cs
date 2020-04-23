@@ -78,11 +78,10 @@ namespace ProjectHaystack
             return HDateTime.now().date;
         }
 
-        public override bool hequals(object obj)
+        public override int GetHashCode() => ToDateTime().GetHashCode();
+        public override bool Equals(object obj)
         {
-            if (!(obj is HDate)) return false;
-            HDate x = (HDate)obj;
-            return (Year == x.Year && Month == x.Month && Day == x.Day);
+            return obj is HDate && (Year == ((HDate)obj).Year && Month == ((HDate)obj).Month && Day == ((HDate)obj).Day);
         }
 
         // Encode as "d:YYYY-MM-DD" 
@@ -147,5 +146,7 @@ namespace ProjectHaystack
             DateTime now = new DateTime(Year, Month, Day);
             return (now.DayOfWeek);
         }
+
+        public DateTime ToDateTime() => new DateTime(Year, Month, Day);
     }
 }

@@ -431,18 +431,20 @@ namespace ProjectHaystack
             return ToString();
         }
 
-        public override bool hequals(object obj)
+        public override int GetHashCode() => date.GetHashCode() ^ time.GetHashCode();
+
+        public override bool Equals(object obj)
         {
-            if (!(obj is HDateTime)) return false;
-            HDateTime x = (HDateTime)obj;
-            return (date.hequals(x.date) && time.hequals(x.time) &&
-                   m_dtoParsed.Offset == x.Offset && TimeZone.hequals(x.TimeZone));
+            return obj is HDateTime
+                && date.hequals(((HDateTime)obj).date)
+                && time.hequals(((HDateTime)obj).time)
+                && m_dtoParsed.Offset == ((HDateTime)obj).Offset
+                && TimeZone.hequals(((HDateTime)obj).TimeZone);
         }
 
         public override string ToString()
         {
-            string strRet = "";
-            strRet = m_dtoParsed.ToString("yyyy-MM-dd'T'HH:mm:ss.FFF");
+            var strRet = m_dtoParsed.ToString("yyyy-MM-dd'T'HH:mm:ss.FFF");
             if (TimeZone.ToString() == "UTC")
             {
                 strRet += "Z UTC";
