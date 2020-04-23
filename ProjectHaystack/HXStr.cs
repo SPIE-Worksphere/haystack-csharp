@@ -6,10 +6,7 @@
 //   1 April 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectHaystack
 {
@@ -20,15 +17,9 @@ namespace ProjectHaystack
      */
     public class HXStr : HVal
     {
-        // Type name 
-        private string m_strType;
-
-        // String value 
-        private string m_strVal;
-
         // Access
-        public string Type { get { return m_strType; } }
-        public string Val { get { return m_strVal; } }
+        public string Type { get; }
+        public string Val { get; }
 
         public static HVal decode(string type, string val)
         {
@@ -46,8 +37,8 @@ namespace ProjectHaystack
         private HXStr(string type, string val)
         {
             if (!isValidType(type)) throw new ArgumentException("Invalid type name: " + type, "type");
-            m_strType = type;
-            m_strVal = val;
+            Type = type;
+            Val = val;
         }
 
         private static bool isValidType(string t)
@@ -68,7 +59,7 @@ namespace ProjectHaystack
         public override string toZinc()
         {
             StringBuilder s = new StringBuilder();
-            s.Append(m_strType).Append("(\"").Append(m_strVal).Append("\")");
+            s.Append(Type).Append("(\"").Append(Val).Append("\")");
             return s.ToString();
         }
 
@@ -78,7 +69,7 @@ namespace ProjectHaystack
             throw new NotImplementedException();
         }
 
-        public override int GetHashCode() => m_strType.GetHashCode() ^ m_strVal.GetHashCode();
+        public override int GetHashCode() => Type.GetHashCode() * 31 + Val.GetHashCode();
 
         public override bool Equals(object o)
         {
@@ -89,16 +80,8 @@ namespace ProjectHaystack
 
             HXStr hxStr = (HXStr)o;
 
-            if (m_strType.CompareTo(hxStr.Type) != 0) return false;
-            return (m_strVal.CompareTo(hxStr.Val) == 0);
-
-        }
-
-        public int hashCode()
-        {
-            int result = m_strType.GetHashCode();
-            result = 31 * result + m_strVal.GetHashCode();
-            return result;
+            if (Type.CompareTo(hxStr.Type) != 0) return false;
+            return (Val.CompareTo(hxStr.Val) == 0);
         }
     }
 }
