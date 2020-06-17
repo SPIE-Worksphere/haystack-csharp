@@ -90,39 +90,41 @@ namespace ProjectHaystack.Auth
       try
       {
         // send initial hello message
-        var helloResp = await SendHelloAsync();
-        // first try standard authentication
-        if (await OpenStdAsync(helloResp))
+        using (var helloResp = await SendHelloAsync())
         {
-          authenticated = true;
-          return;
-        }
-        // check if we have a 200
-        if (helloResp.StatusCode == HttpStatusCode.OK)
-        {
-          authenticated = true;
-          return;
-        }
-
-        var content = ReadContent(helloResp);
-        var schemes = AuthScheme.List();
-        for (var i = 0; i < schemes.Length; ++i)
-        {
-          if (await schemes[i].OnClientNonStdAsync(this, helloResp, content))
+          // first try standard authentication
+          if (await OpenStdAsync(helloResp))
           {
             authenticated = true;
             return;
           }
-        }
+          // check if we have a 200
+          if (helloResp.StatusCode == HttpStatusCode.OK)
+          {
+            authenticated = true;
+            return;
+          }
 
-        // give up
-        var resCode = (int)helloResp.StatusCode;
-        var resServer = helloResp.GetResponseHeader("Server");
-        if (resCode / 100 >= 4)
-        {
-          throw new IOException("HTTP error code: " + resCode); // 4xx or 5xx
+          var content = ReadContent(helloResp);
+          var schemes = AuthScheme.List();
+          for (var i = 0; i < schemes.Length; ++i)
+          {
+            if (await schemes[i].OnClientNonStdAsync(this, helloResp, content))
+            {
+              authenticated = true;
+              return;
+            }
+          }
+
+          // give up
+          var resCode = (int)helloResp.StatusCode;
+          var resServer = helloResp.GetResponseHeader("Server");
+          if (resCode / 100 >= 4)
+          {
+            throw new IOException("HTTP error code: " + resCode); // 4xx or 5xx
+          }
+          throw new AuthException("No suitable auth scheme for: " + resCode + " " + resServer);
         }
-        throw new AuthException("No suitable auth scheme for: " + resCode + " " + resServer);
       }
       catch (AuthException)
       {
@@ -176,74 +178,88 @@ namespace ProjectHaystack.Auth
     /// </returns>
     private async Task<bool> OpenStdAsync(HttpWebResponse resp)
     {
-      // must be 401 challenge with WWW-Authenticate header
-      if (resp.StatusCode != HttpStatusCode.Unauthorized)
+      var innerResponse = resp;
+      try
       {
-        return false;
+        // must be 401 challenge with WWW-Authenticate header
+        if (resp.StatusCode != HttpStatusCode.Unauthorized)
+        {
+          return false;
+        }
+        var wwwAuth = ResHeader(resp, "WWW-Authenticate");
+
+        // don't Use this mechanism for Basic which we
+        // handle as a non-standard scheme because the headers
+        // don't fit nicely into our restricted AuthMsg format
+        if (string.IsNullOrEmpty(wwwAuth) || wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
+        {
+          return false;
+        }
+        // process res/req messages until we have 200 or non-401 failure
+        AuthScheme scheme = null;
+        for (var loopCount = 0; ; ++loopCount)
+        {
+          // sanity check that we don't loop too many times
+          if (loopCount > 5)
+          {
+            throw new AuthException("Loop count exceeded");
+          }
+
+          // parse the WWW-Auth header and Use the first scheme
+          var header = ResHeader(innerResponse, "WWW-Authenticate");
+          AuthMsg[] resMsgs = AuthMsg.ListFromStr(header);
+          var resMsg = resMsgs[0];
+          scheme = AuthScheme.Find(resMsg.scheme);
+
+          // Dispose the previous response.
+          if (innerResponse != resp)
+            innerResponse.Dispose();
+
+          // let scheme handle message
+          var reqMsg = scheme.OnClient(this, resMsg);
+          // send request back to the server
+          innerResponse = await GetAuthAsync(reqMsg);
+          try
+          {
+            DumpRes(innerResponse, false);
+          }
+          catch (Exception e)
+          {
+            e.ToString();
+          }
+          // 200 means we are done, 401 means keep looping,
+          // consider anything else a failure
+          if (innerResponse.StatusCode == HttpStatusCode.OK)
+          {
+            break;
+          }
+          if (innerResponse.StatusCode == HttpStatusCode.Unauthorized)
+          {
+            continue;
+          }
+          throw new AuthException((int)innerResponse.StatusCode + " " + innerResponse.GetResponseStream());
+        }
+        // init the bearer token
+        var authInfo = ResHeader(innerResponse, "Authentication-Info");
+        AuthMsg authInfoMsg = AuthMsg.FromStr("bearer " + authInfo);
+
+        // callback to scheme for client Success
+        scheme.OnClientSuccess(this, authInfoMsg);
+
+        // only keep authToken parameter for Authorization header
+        authInfoMsg = new AuthMsg("bearer", new[]
+        {
+          "authToken",
+          authInfoMsg.Param("authToken")
+        });
+        headers["Authorization"] = authInfoMsg.ToString();
       }
-      var wwwAuth = ResHeader(resp, "WWW-Authenticate");
-
-      // don't Use this mechanism for Basic which we
-      // handle as a non-standard scheme because the headers
-      // don't fit nicely into our restricted AuthMsg format
-      if (string.IsNullOrEmpty(wwwAuth) || wwwAuth.ToLower().StartsWith("basic", StringComparison.Ordinal))
+      finally
       {
-        return false;
+        // Dispose the last response.
+        if (innerResponse != resp)
+          resp.Dispose();
       }
-      // process res/req messages until we have 200 or non-401 failure
-      AuthScheme scheme = null;
-      for (var loopCount = 0; ; ++loopCount)
-      {
-        // sanity check that we don't loop too many times
-        if (loopCount > 5)
-        {
-          throw new AuthException("Loop count exceeded");
-        }
-
-        // parse the WWW-Auth header and Use the first scheme
-        var header = ResHeader(resp, "WWW-Authenticate");
-        AuthMsg[] resMsgs = AuthMsg.ListFromStr(header);
-        var resMsg = resMsgs[0];
-        scheme = AuthScheme.Find(resMsg.scheme);
-
-        // let scheme handle message
-        var reqMsg = scheme.OnClient(this, resMsg);
-        // send request back to the server
-        resp = await GetAuthAsync(reqMsg);
-        try
-        {
-          DumpRes(resp, false);
-        }
-        catch (Exception e)
-        {
-          e.ToString();
-        }
-        // 200 means we are done, 401 means keep looping,
-        // consider anything else a failure
-        if (resp.StatusCode == HttpStatusCode.OK)
-        {
-          break;
-        }
-        if (resp.StatusCode == HttpStatusCode.Unauthorized)
-        {
-          continue;
-        }
-        throw new AuthException((int)resp.StatusCode + " " + resp.GetResponseStream());
-      }
-      // init the bearer token
-      var authInfo = ResHeader(resp, "Authentication-Info");
-      AuthMsg authInfoMsg = AuthMsg.FromStr("bearer " + authInfo);
-
-      // callback to scheme for client Success
-      scheme.OnClientSuccess(this, authInfoMsg);
-
-      // only keep authToken parameter for Authorization header
-      authInfoMsg = new AuthMsg("bearer", new[]
-      {
-    "authToken",
-    authInfoMsg.Param("authToken")
-    });
-      headers["Authorization"] = authInfoMsg.ToString();
 
       // we did it!
       return true;
@@ -308,10 +324,8 @@ namespace ProjectHaystack.Auth
       {
         headers = new Hashtable();
       }
-      var iter = headers.Keys.GetEnumerator();
-      while (iter.MoveNext())
+      foreach (string key in headers.Keys)
       {
-        var key = (string)iter.Current;
         var val = (string)headers[key];
         c.Headers[key] = val;
       }
@@ -388,7 +402,10 @@ namespace ProjectHaystack.Auth
         requestConfigurator(c);
         var response = (HttpWebResponse)(await c.GetResponseAsync());
         if ((int)response.StatusCode >= 300 || (int)response.StatusCode < 200)
+        {
+          response.Dispose();
           throw new WebException("Invalid status code", null, WebExceptionStatus.ProtocolError, response);
+        }
         return response;
       }
       catch (WebException e)
@@ -428,10 +445,9 @@ namespace ProjectHaystack.Auth
       {
         Console.WriteLine("====  " + c.ResponseUri);
         Console.WriteLine("res: " + c.StatusCode + " " + c.GetResponseStream());
-        for (var it = (IEnumerator)c.Headers; it.MoveNext();)
+        foreach (var key in c.Headers.AllKeys)
         {
-          var key = (string)it.Current;
-          var val = c.GetResponseHeader(key);
+          var val = c.Headers[key];
           Console.WriteLine(key + ": " + val);
         }
         Console.WriteLine();

@@ -24,7 +24,7 @@ namespace ProjectHaystack.Client
   /// </summary>
   /// <seealso> cref= <a href='http://project-haystack.org/doc/Rest'>Project Haystack</a> </seealso>
   public class HAsyncClient : IHClient, IHProj, IHAsyncClient
-    {
+  {
     private readonly AsyncAuthClientContext _context;
     private int _connectTimeout = 60 * 1000;
     private int _readTimeout = 60 * 1000;
@@ -165,10 +165,12 @@ namespace ProjectHaystack.Client
 
     private async Task<string> HandleHttpRequestAsync(string action, Action<HttpWebRequest> requestConfigurator)
     {
-      var resp = await _context.ServerCallAsync(action, requestConfigurator);
-      using (var reader = new StreamReader(resp.GetResponseStream()))
+      using (var resp = await _context.ServerCallAsync(action, requestConfigurator))
       {
-        return await reader.ReadToEndAsync();
+        using (var reader = new StreamReader(resp.GetResponseStream()))
+        {
+          return await reader.ReadToEndAsync();
+        }
       }
     }
 
@@ -261,7 +263,7 @@ namespace ProjectHaystack.Client
     {
       HGridBuilder b = new HGridBuilder();
       b.addCol("filter");
-      if(limit > 0)
+      if (limit > 0)
       {
         b.addCol("limit");
         b.addRow(new HVal[] { HStr.make(filter), HNum.make(limit) });
@@ -365,7 +367,7 @@ namespace ProjectHaystack.Client
       * @param dur Number with duration unit if setting level 8
       */
     public HGrid pointWrite(HRef id, int level, string who,
-        HVal val, HNum dur)
+      HVal val, HNum dur)
     {
       HGridBuilder b = new HGridBuilder();
       b.addCol("id");
