@@ -83,21 +83,23 @@ namespace ProjectHaystack.Auth
       {
         // make another request to verify
         HttpWebRequest origRequest = null;
-        var resp2 = await cx.ServerCallAsync("about", c =>
+        using (var resp2 = await cx.ServerCallAsync("about", c =>
         {
           c.Headers.Add(HttpRequestHeader.Authorization, headerVal);
           origRequest = c;
-        });
-        resp2.GetResponseHeader(headerKey);
-        if ((int)resp2.StatusCode != 200)
+        }))
         {
-          throw new AuthException("Basic auth failed: " + resp2.StatusCode + " " + resp2.GetResponseStream().ToString());
-        }
+          resp2.GetResponseHeader(headerKey);
+          if ((int)resp2.StatusCode != 200)
+          {
+            throw new AuthException("Basic auth failed: " + resp2.StatusCode + " " + resp2.GetResponseStream().ToString());
+          }
 
-        // pass Authorization and Cookie headers for future requests
-        cx.headers[headerKey] = headerVal;
-        cx.AddCookiesToHeaders(origRequest);
-        return true;
+          // pass Authorization and Cookie headers for future requests
+          cx.headers[headerKey] = headerVal;
+          cx.AddCookiesToHeaders(origRequest);
+          return true;
+        }
       }
       catch (Exception e)
       {
