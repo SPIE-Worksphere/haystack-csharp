@@ -410,9 +410,8 @@ namespace ProjectHaystack.Auth
       }
       catch (WebException e)
       {
-        var response = e.Response;
-        var httpresp = (HttpWebResponse)response;
-        if (httpresp.StatusCode == HttpStatusCode.Unauthorized)
+        var httpresp = (HttpWebResponse)e.Response;
+        if (httpresp?.StatusCode == HttpStatusCode.Unauthorized)
         {
           return httpresp;
         }
