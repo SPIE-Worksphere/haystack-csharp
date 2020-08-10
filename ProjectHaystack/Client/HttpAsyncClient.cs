@@ -55,9 +55,27 @@ namespace ProjectHaystack.Client
         /// </summary>
         public Uri Uri { get; private set; }
 
+        /// <summary>
+        /// Open the connection, authenticating with the server.
+        /// </summary>
         public virtual async Task OpenAsync()
         {
             await _authenticator.Authenticate(_client, new Uri(Uri, "/user/auth"));
+        }
+
+        /// <summary>
+        /// Close the connection, logging out the user.
+        /// </summary>
+        public virtual async Task CloseAsync()
+        {
+            using (var response = await _client.GetAsync(new Uri(Uri, "/user/logout")))
+            {
+                if ((int)response.StatusCode >= 400 || (int)response.StatusCode < 300)
+                {
+                    response.Dispose();
+                    throw new HttpRequestException($"Invalid response {response.StatusCode:d}: {response.ReasonPhrase}");
+                }
+            }
         }
 
         #region Operations
