@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ProjectHaystack.Auth
 {
+    /// <summary>
+    /// Authentication method using HayStack Basic authentication.
+    /// </summary>
     public class BasicAuthenticator : IAuthenticator
     {
         private readonly string _username;

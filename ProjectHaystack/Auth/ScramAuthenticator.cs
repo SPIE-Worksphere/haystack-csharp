@@ -10,6 +10,9 @@ using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Auth
 {
+    /// <summary>
+    /// Authentication mechanism using SCRAM (Salted Challenge Response Authentication Mechanism).
+    /// </summary>
     public class ScramAuthenticator : IAuthenticator
     {
         private const string _gs2Header = "n,,";
