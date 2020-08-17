@@ -31,6 +31,7 @@ namespace ProjectHaystack.Client
             _client = client;
             _authenticator = authenticator;
             Uri = apiUri.EndWithSlash();
+            AuthUri = new Uri(Uri, "/user/auth");
         }
 
         /// <summary>
@@ -55,12 +56,14 @@ namespace ProjectHaystack.Client
         /// </summary>
         public Uri Uri { get; private set; }
 
+        public Uri AuthUri { get; set; }
+
         /// <summary>
         /// Open the connection, authenticating with the server.
         /// </summary>
         public virtual async Task OpenAsync()
         {
-            await _authenticator.Authenticate(_client, new Uri(Uri, "/user/auth"));
+            await _authenticator.Authenticate(_client, AuthUri);
         }
 
         /// <summary>

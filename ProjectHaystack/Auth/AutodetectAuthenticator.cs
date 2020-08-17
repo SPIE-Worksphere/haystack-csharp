@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -8,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace ProjectHaystack.Auth
 {
+    /// <summary>
+    /// Authentication mechanism that tries to auto-detect the Haystack authentication mechanism.
+    /// </summary>
     public class AutodetectAuthenticator : IAuthenticator
     {
         private readonly string _username;
