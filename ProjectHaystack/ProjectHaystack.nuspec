@@ -4,7 +4,7 @@
     <id>$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
+    <authors>$authors$</authors>
     <owners>$author$</owners>
     <license type="expression">AFL-3.0</license>
     <projectUrl>https://github.com/Strukton-Worksphere/haystack-csharp</projectUrl>
