@@ -53,7 +53,6 @@ namespace ProjectHaystack
             TimeZoneInfo tziFound = null;
             try
             {
-                string strWindowsTimeZoneID = "";
                 string strIANATimeZoneID = "";
                 bool bFound = false;
                 int iLength = TimeZoneConverter.TZConvert.KnownIanaTimeZoneNames.ToArray().Length;
@@ -69,12 +68,7 @@ namespace ProjectHaystack
                 }
                 if (bFound)
                 {
-                    try
-                    {
-                        strWindowsTimeZoneID = TimeZoneConverter.TZConvert.IanaToWindows(strIANATimeZoneID);
-                        tziFound = TimeZoneInfo.FindSystemTimeZoneById(strWindowsTimeZoneID);
-                    }
-                    catch (Exception)
+                    if (!TimeZoneConverter.TZConvert.TryGetTimeZoneInfo(strIANATimeZoneID, out tziFound))
                     {
                         if (bChecked)
                         {
@@ -83,7 +77,7 @@ namespace ProjectHaystack
                         }
                         else
                         {
-                            return (HTimeZone)null;
+                            return null;
                         }
                     }
                     HTimeZone tzReturn = new HTimeZone(name, tziFound);
