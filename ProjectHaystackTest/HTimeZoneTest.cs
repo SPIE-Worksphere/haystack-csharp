@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProjectHaystack;
 
 namespace ProjectHaystackTest
@@ -10,14 +11,14 @@ namespace ProjectHaystackTest
         public void make_utc()
         {
             var tz = HTimeZone.make("UTC", false);
-            Assert.AreEqual("UTC", tz.dntz.Id);
+            Assert.IsTrue(new[] { "UTC", "Etc/UTC" }.Contains(tz.dntz.Id));
         }
 
         [TestMethod]
         public void make_sidney()
         {
             var tz = HTimeZone.make("Sydney", false);
-            Assert.AreEqual("AUS Eastern Standard Time", tz.dntz.Id);
+            Assert.IsTrue(new[] { "AUS Eastern Standard Time", "Australia/Sydney" }.Contains(tz.dntz.Id));
         }
     }
 }

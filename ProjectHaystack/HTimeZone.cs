@@ -53,20 +53,11 @@ namespace ProjectHaystack
             TimeZoneInfo tziFound = null;
             try
             {
-                string strIANATimeZoneID = "";
-                bool bFound = false;
-                int iLength = TimeZoneConverter.TZConvert.KnownIanaTimeZoneNames.ToArray().Length;
-                int iCurIndex = 0;
-                while ((!bFound) && (iCurIndex < iLength))
-                {
-                    if (TimeZoneConverter.TZConvert.KnownIanaTimeZoneNames.ToArray()[iCurIndex].ToUpper().Contains(strNameToSearch.ToUpper()))
-                    {
-                        bFound = true;
-                        strIANATimeZoneID = TimeZoneConverter.TZConvert.KnownIanaTimeZoneNames.ToArray()[iCurIndex];
-                    }
-                    iCurIndex++;
-                }
-                if (bFound)
+                var strIANATimeZoneID = TimeZoneConverter.TZConvert.KnownIanaTimeZoneNames
+                    .Where(tzName => tzName.ToUpper().Contains(strNameToSearch.ToUpper()))
+                    .OrderBy(tzName => tzName.Length)
+                    .FirstOrDefault();
+                if (strIANATimeZoneID != null)
                 {
                     if (!TimeZoneConverter.TZConvert.TryGetTimeZoneInfo(strIANATimeZoneID, out tziFound))
                     {
@@ -133,16 +124,15 @@ namespace ProjectHaystack
                 }
             }
             string strIANATZID = "";
-            try
+            if (!TimeZoneConverter.TZConvert.TryWindowsToIana(dntzi.Id, out strIANATZID))
             {
-                strIANATZID = TimeZoneConverter.TZConvert.WindowsToIana(dntzi.Id);
-            }
-            catch (Exception)
-            {
-                if (bChecked)
-                    throw new ArgumentException("Windows time zone id " + dntzi.Id + " could not be converted to IANA tz id", dntzi.Id);
-                else
-                    return null;
+                if (!TimeZoneConverter.TZConvert.TryWindowsToIana(dntzi.Id.Replace("Etc/", ""), out strIANATZID))
+                {
+                    if (bChecked)
+                        throw new ArgumentException("Windows time zone id " + dntzi.Id + " could not be converted to IANA tz id", dntzi.Id);
+                    else
+                        return null;
+                }
             }
             string strHaystackTZID = "";
             bool bFound = false;
@@ -224,7 +214,7 @@ namespace ProjectHaystack
                 catch (Exception genexcep)
                 {
                     // bubble the exception
-                    throw new Exception("Exception at UTC tz make", genexcep);
+                    throw new Exception("Exception at REL tz make", genexcep);
                 }
                 return htzRet;
             }
@@ -233,19 +223,15 @@ namespace ProjectHaystack
         {
             get
             {
-                TimeZoneInfo tzDefault = TimeZoneInfo.Local;
-
-                HTimeZone htzRet = null;
+                var tzDefault = TimeZoneConverter.TZConvert.GetTimeZoneInfo(TimeZoneInfo.Local.Id);
                 try
                 {
-                    htzRet = make(tzDefault, true);
+                    return make(tzDefault, true);
                 }
                 catch (Exception genexcep)
                 {
-                    // bubble the exception
-                    throw new Exception("Exception at UTC tz make", genexcep);
+                    throw new Exception("Exception at Default tz make", genexcep);
                 }
-                return htzRet;
             }
         }
     }

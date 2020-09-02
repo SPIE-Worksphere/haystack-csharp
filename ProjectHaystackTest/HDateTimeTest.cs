@@ -52,7 +52,7 @@ namespace ProjectHaystackTest
             TimeZoneInfo tziNewYork;
             try
             {
-                tziNewYork = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                tziNewYork = TimeZoneConverter.TZConvert.GetTimeZoneInfo("Eastern Standard Time");
             }
             catch
             {
