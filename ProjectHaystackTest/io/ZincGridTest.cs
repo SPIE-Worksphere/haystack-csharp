@@ -27,6 +27,39 @@ namespace ProjectHaystackTest.io
               new HVal[][] { }
             );
         }
+
+        [TestMethod]
+        public void valToString_InnerGrid()
+        {
+            var innerBuilder = new HGridBuilder();
+            innerBuilder.addCol("val");
+            innerBuilder.addCol("other");
+            innerBuilder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
+            var builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("inner");
+            builder.addRow(new HVal[] { HStr.make("value"), innerBuilder.toGrid() });
+            var grid = builder.toGrid();
+            var str = HZincWriter.valToString(grid);
+            Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>", str.Trim());
+        }
+
+        [TestMethod]
+        public void gridToString_InnerGrid()
+        {
+            var innerBuilder = new HGridBuilder();
+            innerBuilder.addCol("val");
+            innerBuilder.addCol("other");
+            innerBuilder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
+            var builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("inner");
+            builder.addRow(new HVal[] { HStr.make("value"), innerBuilder.toGrid() });
+            var grid = builder.toGrid();
+            var str = HZincWriter.gridToString(grid);
+            Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>", str.Trim());
+        }
+
         ///////////////////////////////////////////////////////////////////i///////
         // Utils
         //////////////////////////////////////////////////////////////////////////
