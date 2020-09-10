@@ -26,10 +26,10 @@ namespace ProjectHaystack.io
         //////////////////////////////////////////////////////////////////////////
 
         // Version of Zinc to write 
-        private int m_iVersion;
+        private int m_iVersion = 3;
 
         private StreamWriter m_swOut;
-        private int m_iGridDepth;
+        private bool isInGrid = false;
 
         //////////////////////////////////////////////////////////////////////////
         // Access
@@ -71,16 +71,12 @@ namespace ProjectHaystack.io
         {
             m_swOut = new StreamWriter(swOut.BaseStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
-            m_iGridDepth = 0;
-            m_iVersion = 3;
         }
 
         public HZincWriter (Stream strmOut, bool encoderShouldEmitUTF8Identifier = false)
         {
             m_swOut = new StreamWriter(strmOut, new UTF8Encoding(encoderShouldEmitUTF8Identifier));
             // IOException in .NET is not possible with this constructor - No need to catch and bubble just don't catch.
-            m_iGridDepth = 0;
-            m_iVersion = 3;
         }
         // Flush underlying output stream 
         public override void flush()
@@ -100,19 +96,10 @@ namespace ProjectHaystack.io
             if (val is HGrid)
             {
                 HGrid grid = (HGrid)val;
-                try
-                {
-                    bool insideGrid = m_iGridDepth > 0;
-                    ++m_iGridDepth;
-                    if (insideGrid)
-                        writeNestedGrid(grid);
-                    else
-                        writeGrid(grid);
-                }
-                finally
-                {
-                    --m_iGridDepth;
-                }
+                if (isInGrid)
+                    writeNestedGrid(grid);
+                else
+                    writeGrid(grid);
             }
             else if (val is HList) writeList((HList)val);
             else if (val is HDict) writeDict((HDict)val);
@@ -188,6 +175,7 @@ namespace ProjectHaystack.io
         // Write a grid 
         public override void writeGrid(HGrid grid)
         {
+            isInGrid = true;
             // meta
             p("ver:\"").p(m_iVersion).p(".0\"").writeMeta(grid.meta).nl();
 
@@ -215,6 +203,7 @@ namespace ProjectHaystack.io
                 nl();
             }
             flush();
+            isInGrid = false;
         }
 
         private HZincWriter writeMeta(HDict meta)
@@ -268,7 +257,7 @@ namespace ProjectHaystack.io
                 }
                 else
                 {
-                    m_swOut.Write(val.toZinc());
+                    writeVal(val);
                 }
             }
             flush();
