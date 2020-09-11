@@ -232,7 +232,7 @@ namespace ProjectHaystack
 
         // Add new row with array of cells which correspond to column
         //    order.  Return this. 
-        public HGridBuilder addRow(HVal[] cells)
+        public HGridBuilder addRow(params HVal[] cells)
         {
             if (m_cols.Count() != cells.Length)
                 throw new InvalidOperationException("Row cells size != cols size");
