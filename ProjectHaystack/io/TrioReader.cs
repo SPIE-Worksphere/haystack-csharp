@@ -75,14 +75,30 @@ namespace ProjectHaystack.io
                     if (line.EndsWith(":"))
                     {
                         // Multi-line value.
-                        var isZinc = line.EndsWith(":Zinc:");
+                        var textFormat =
+                            parts.Length == 1 ? TextFormat.String
+                            : parts[1].EndsWith("Zinc:") ? TextFormat.Zinc
+                            : parts[1].EndsWith("Trio:") ? TextFormat.Trio
+                            : TextFormat.String;
                         var valBuilder = new StringBuilder();
                         while ((line = _trioReader.ReadLine()) != null && line.StartsWith("  "))
                             valBuilder.AppendLine(line.Substring(2));
-                        if (isZinc)
-                            entity.Add(key, new HZincReader(valBuilder.ToString()).readVal());
-                        else
-                            entity.Add(key, HStr.make(valBuilder.ToString().Trim()));
+                        switch (textFormat)
+                        {
+                            case TextFormat.String:
+                                entity.Add(key, HStr.make(valBuilder.ToString().Trim()));
+                                break;
+                            case TextFormat.Zinc:
+                                entity.Add(key, new HZincReader(valBuilder.ToString()).readVal());
+                                break;
+                            case TextFormat.Trio:
+                                var entities = new TrioReader(valBuilder.ToString()).ReadEntities().ToArray();
+                                var val = entities.Length == 1
+                                    ? (HVal)entities[0]
+                                    : HList.make(entities);
+                                entity.Add(key, val);
+                                break;
+                        }
                         continue;
                     }
                     else
@@ -115,6 +131,13 @@ namespace ProjectHaystack.io
         public void Dispose()
         {
             _trioReader.Dispose();
+        }
+
+        private enum TextFormat
+        {
+            String,
+            Zinc,
+            Trio,
         }
     }
 }
