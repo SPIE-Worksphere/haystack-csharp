@@ -34,7 +34,7 @@ namespace ProjectHaystack
         // Make Functions
         //////////////////////////////////////////////////////////////////////////
         // Create a list of the given items. The items are copied 
-        public static HList make(HVal[] items)
+        public static HList make(params HVal[] items)
         {
             HVal[] copy = new HVal[items.Length];
             Array.Copy(items, copy, items.Length);
