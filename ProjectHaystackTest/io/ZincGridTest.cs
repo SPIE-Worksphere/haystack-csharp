@@ -31,15 +31,16 @@ namespace ProjectHaystackTest.io
         [TestMethod]
         public void valToString_InnerGrid()
         {
-            var innerBuilder = new HGridBuilder();
-            innerBuilder.addCol("val");
-            innerBuilder.addCol("other");
-            innerBuilder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
             var builder = new HGridBuilder();
             builder.addCol("val");
-            builder.addCol("inner");
-            builder.addRow(new HVal[] { HStr.make("value"), innerBuilder.toGrid() });
+            builder.addCol("other");
+            builder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
             var grid = builder.toGrid();
+            builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("inner");
+            builder.addRow(new HVal[] { HStr.make("value"), grid });
+            grid = builder.toGrid();
             var str = HZincWriter.valToString(grid);
             Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>", str.Trim());
         }
@@ -47,17 +48,56 @@ namespace ProjectHaystackTest.io
         [TestMethod]
         public void gridToString_InnerGrid()
         {
-            var innerBuilder = new HGridBuilder();
-            innerBuilder.addCol("val");
-            innerBuilder.addCol("other");
-            innerBuilder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
             var builder = new HGridBuilder();
             builder.addCol("val");
-            builder.addCol("inner");
-            builder.addRow(new HVal[] { HStr.make("value"), innerBuilder.toGrid() });
+            builder.addCol("other");
+            builder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
             var grid = builder.toGrid();
+            builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("inner");
+            builder.addRow(new HVal[] { HStr.make("value"), grid });
+            grid = builder.toGrid();
             var str = HZincWriter.gridToString(grid);
             Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>", str.Trim());
+        }
+
+        [TestMethod]
+        public void gridToString_InnerGrids()
+        {
+            var builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("other");
+            builder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
+            var grid = builder.toGrid();
+            builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("inner");
+            builder.addRow(new HVal[] { HStr.make("value"), grid });
+            builder.addRow(new HVal[] { HStr.make("value"), grid });
+            grid = builder.toGrid();
+            var str = HZincWriter.gridToString(grid);
+            Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>", str.Trim());
+        }
+
+        [TestMethod]
+        public void gridToString_NestedGrids()
+        {
+            var builder = new HGridBuilder();
+            builder.addCol("val");
+            builder.addCol("other");
+            builder.addRow(new HVal[] { HStr.make("value"), HNum.make(10) });
+            var grid = builder.toGrid();
+            for (var i = 0; i < 2; i++)
+            {
+                builder = new HGridBuilder();
+                builder.addCol("val");
+                builder.addCol("inner");
+                builder.addRow(new HVal[] { HStr.make("value"), grid });
+                grid = builder.toGrid();
+            }
+            var str = HZincWriter.gridToString(grid);
+            Assert.AreEqual("ver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,inner\n\"value\",<<\nver:\"3.0\"\nval,other\n\"value\",10\n>>\n>>", str.Trim());
         }
 
         ///////////////////////////////////////////////////////////////////i///////
