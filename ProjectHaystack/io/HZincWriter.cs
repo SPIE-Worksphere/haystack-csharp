@@ -42,14 +42,9 @@ namespace ProjectHaystack.io
         // Write a grid to an in-memory a string 
         public static string gridToString(HGrid grid)
         {
-            MemoryStream ms = new MemoryStream();
-            StreamWriter swOut = new StreamWriter(ms);
-            new HZincWriter(swOut).writeGrid(grid);
-
-            StreamReader sr = new StreamReader(ms);
-            ms.Position = 0;
-            return sr.ReadToEnd();
+            return valToString(grid);
         }
+
         public static string valToString(HVal val)
         {
             MemoryStream msOut = new MemoryStream();
@@ -59,8 +54,6 @@ namespace ProjectHaystack.io
             msOut.Position = 0;
             return sr.ReadToEnd();
         }
-
-
 
         //////////////////////////////////////////////////////////////////////////
         // Construction
@@ -97,9 +90,15 @@ namespace ProjectHaystack.io
             {
                 HGrid grid = (HGrid)val;
                 if (isInGrid)
+                {
                     writeNestedGrid(grid);
+                }
                 else
+                {
+                    isInGrid = true;
                     writeGrid(grid);
+                    isInGrid = false;
+                }
             }
             else if (val is HList) writeList((HList)val);
             else if (val is HDict) writeDict((HDict)val);
@@ -175,7 +174,6 @@ namespace ProjectHaystack.io
         // Write a grid 
         public override void writeGrid(HGrid grid)
         {
-            isInGrid = true;
             // meta
             p("ver:\"").p(m_iVersion).p(".0\"").writeMeta(grid.meta).nl();
 
@@ -203,7 +201,6 @@ namespace ProjectHaystack.io
                 nl();
             }
             flush();
-            isInGrid = false;
         }
 
         private HZincWriter writeMeta(HDict meta)
