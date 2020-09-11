@@ -38,7 +38,7 @@ summary:
         }
 
         [TestMethod]
-        public void ReadEntities_NestedGrid_IsValid()
+        public void ReadEntities_NestedZincGrid_IsValid()
         {
             // Arrange.
             var trio = @"// Trio
@@ -64,6 +64,34 @@ val:Zinc:
             Assert.IsTrue(entities[1]["val"] is HDict);
             Assert.IsTrue(entities[2]["val"] is HGrid);
             Assert.AreEqual(10, ((HGrid)entities[2]["val"]).row(0).getInt("a"));
+        }
+
+        [TestMethod]
+        public void ReadEntities_NestedTrioGrid_IsValid()
+        {
+            // Arrange.
+            var trio = @"// Trio
+type:list
+val:[1,2,3]
+---
+type:dict
+val:{ dis:""Dict!"" foo}
+---
+type:list
+val: Trio:
+  b: 20
+  a: 10";
+            var reader = new TrioReader(trio);
+
+            // Act.
+            var entities = reader.ReadEntities().ToArray();
+
+            // Assert.
+            Assert.AreEqual(3, entities.Length);
+            Assert.AreEqual(HStr.make("list"), entities[0]["type"]);
+            Assert.IsTrue(entities[1]["val"] is HDict);
+            Assert.IsTrue(entities[2]["val"] is HDict);
+            Assert.AreEqual(10, ((HNum)((HDict)entities[2]["val"])["a"]).doubleval);
         }
 
         [TestMethod]
