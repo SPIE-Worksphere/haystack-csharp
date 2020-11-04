@@ -90,8 +90,6 @@ namespace ProjectHaystack.Client
       await _context.OpenAsync();
     }
 
-    #region AddedFromJavaToolkitOperations
-
     // Added from Java Toolkit
     // Call "about" to query summary info.
     public HDict about()
@@ -114,7 +112,6 @@ namespace ProjectHaystack.Client
     {
       return call("formats", HGrid.InstanceEmpty, "text/zinc");
     }
-    #endregion //AddedFromJavaToolkitOperations
 
     /// <summary>
     /// Gets the raw string from request passed in
@@ -174,7 +171,6 @@ namespace ProjectHaystack.Client
       }
     }
 
-    #region AddedFromJavaRegionReads
     //////////////////////////////////////////////////////////////////////////
     // Reads
     //////////////////////////////////////////////////////////////////////////
@@ -280,9 +276,6 @@ namespace ProjectHaystack.Client
       return readAllAsync(filter, limit).Result;
     }
 
-    #endregion // AddedFromJavaRegionReads
-
-    #region AddedFromJavaRegionEvals
     //////////////////////////////////////////////////////////////////////////
     // Evals
     //////////////////////////////////////////////////////////////////////////
@@ -410,8 +403,6 @@ namespace ProjectHaystack.Client
       return res;
     }
 
-    #endregion // AddedFromJavaRegionPointWrites
-    #region AddedFromJavaRegionHistory
     //////////////////////////////////////////////////////////////////////////
     // History
     //////////////////////////////////////////////////////////////////////////
@@ -449,15 +440,25 @@ namespace ProjectHaystack.Client
       HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
       call("hisWrite", req, "text/zinc");
     }
+
     public Task<HGrid> hisWriteAsync(HRef id, HHisItem[] items)
     {
-      HDict meta = new HDictBuilder().add("id", id).toDict();
+      return HisWriteAsync(id, items);
+    }
+
+    public Task<HGrid> HisWriteAsync(HRef id, HHisItem[] items, HDict metaData = null)
+    {
+      HDict meta = metaData ?? new HDictBuilder().toDict();
+      meta.Add("id", id);
       HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
       return CallAsync("hisWrite", req, "text/zinc");
     }
-    #endregion // AddedFromJavaRegionHistory
 
-    #region AddedFromJavaActionsAndCall
+    public Task<HGrid> HisWriteNoWarnAsync(HRef id, HHisItem[] items)
+    {
+      return HisWriteAsync(id, items, new HDictBuilder().add("noWarn", HMarker.VAL).toDict());
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Actions
     //////////////////////////////////////////////////////////////////////////
@@ -514,7 +515,5 @@ namespace ProjectHaystack.Client
       string resStr = await PostStringAsync(op, reqStr, mimeType);
       return new HZincReader(resStr).readGrid();
     }
-
-    #endregion // AddedFromJavaActionsAndCall
   }
 }

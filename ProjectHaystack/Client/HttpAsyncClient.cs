@@ -424,12 +424,25 @@ namespace ProjectHaystack.Client
             HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
             call("hisWrite", req, "text/zinc");
         }
+
         public Task<HGrid> hisWriteAsync(HRef id, HHisItem[] items)
         {
-            HDict meta = new HDictBuilder().add("id", id).toDict();
+            return HisWriteAsync(id, items);
+        }
+
+        public Task<HGrid> HisWriteAsync(HRef id, HHisItem[] items, HDict metaData = null)
+        {
+            HDict meta = metaData ?? new HDictBuilder().toDict();
+            meta.Add("id", id);
             HGrid req = HGridBuilder.hisItemsToGrid(meta, items);
             return CallAsync("hisWrite", req, "text/zinc");
         }
+
+        public Task<HGrid> HisWriteNoWarnAsync(HRef id, HHisItem[] items)
+        {
+            return HisWriteAsync(id, items, new HDictBuilder().add("noWarn", HMarker.VAL).toDict());
+        }
+
         #endregion History
 
         #region Actions
