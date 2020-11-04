@@ -11,5 +11,7 @@ namespace ProjectHaystack.Client
         Task<HGrid> readAllAsync(string filter, int limit);
         Task<HDict> readAsync(string filter, bool bChecked);
         Task<HGrid> hisWriteAsync(HRef id, HHisItem[] items);
+        Task<HGrid> HisWriteAsync(HRef id, HHisItem[] items, HDict metaData = null);
+        Task<HGrid> HisWriteNoWarnAsync(HRef id, HHisItem[] items);
     }
 }
