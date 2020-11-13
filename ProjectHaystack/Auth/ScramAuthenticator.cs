@@ -49,7 +49,16 @@ namespace ProjectHaystack.Auth
                 "username=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(_username)).Trim('='));
             using (var response = await client.SendAsync(message))
             {
-                var auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                string auth = null;
+                try
+                {
+                    auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
+                }
+
                 _lastMessage = TokenToDict(auth.Substring(6));
             }
         }
@@ -67,7 +76,15 @@ namespace ProjectHaystack.Auth
                }));
             using (var response = await client.SendAsync(message))
             {
-                var auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                string auth = null;
+                try
+                {
+                    auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
+                }
                 _lastMessage = TokenToDict(auth.Substring(6));
             }
         }
@@ -102,7 +119,15 @@ namespace ProjectHaystack.Auth
                    ["handshakeToken"] = _lastMessage["handshakeToken"],
                }));
             var response = await client.SendAsync(message);
-            var auth = response.Headers.GetValues("Authentication-Info").First();
+            string auth = null;
+            try
+            {
+                auth = response.Headers.GetValues("Authentication-Info").First();
+            }
+            catch (InvalidOperationException)
+            {
+                throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
+            }
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", "authToken=" + TokenToDict(auth)["authToken"]);
             response.Dispose();
         }
