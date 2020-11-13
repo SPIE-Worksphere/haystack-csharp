@@ -37,7 +37,15 @@ namespace ProjectHaystack.Auth
                 "username=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(_username)).Trim('='));
             using (var response = await client.SendAsync(message))
             {
-                var auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                string auth = null;
+                try
+                {
+                    auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                }
+                catch (InvalidOperationException)
+                {
+                    throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
+                }
                 _lastMessage = auth.ToLower();
                 if (_lastMessage.StartsWith("basic"))
                     return;
