@@ -19,7 +19,6 @@ namespace ProjectHaystackTest
         {
             // Instance Empty
             HDict tags = new HDictBuilder().toDict();
-            Assert.IsTrue(tags == HDict.Empty);
             Assert.AreEqual(tags, HDict.Empty);
 
             // size
