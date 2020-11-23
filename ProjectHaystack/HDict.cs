@@ -19,7 +19,6 @@ namespace ProjectHaystack
     {
         // Internal instance of HDict that is of type MapImpl
         //   that is an empty set of tags
-        private static HDict m_dictInstanceEmpty = null;
         private static readonly object padlock = new object();
         private readonly Dictionary<string, HVal> m_map;
         private Lazy<int> m_hashCode;
@@ -37,14 +36,7 @@ namespace ProjectHaystack
         {
             get
             {
-                lock (padlock)
-                {
-                    if (m_dictInstanceEmpty == null)
-                    {
-                        m_dictInstanceEmpty = new HDict(new Dictionary<string, HVal>(11));
-                    }
-                }
-                return m_dictInstanceEmpty;
+                return new HDict(new Dictionary<string, HVal>());
             }
         }
 
