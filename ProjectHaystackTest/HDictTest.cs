@@ -6,6 +6,7 @@
 //   16 August 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
 //
 using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProjectHaystack;
 
@@ -173,6 +174,18 @@ namespace ProjectHaystackTest
         {
             Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().getDef("def").ToString(), "^a");
             Assert.AreEqual(new HDictBuilder().add("def", HDef.make("^a")).toDict().toString(), "{def:^a}");
+        }
+
+        [TestMethod]
+        public void testToArray()
+        {
+            HDict a = new HDictBuilder().add("x").add("y", "str").toDict();
+            var array = a.ToArray();
+            Assert.AreEqual(2, array.Length);
+            Assert.AreEqual("x", array[0].Key);
+            Assert.AreEqual(HMarker.VAL, array[0].Value);
+            Assert.AreEqual("y", array[1].Key);
+            Assert.AreEqual(HStr.make("str"), array[1].Value);
         }
     }
 }

@@ -53,7 +53,7 @@ name:Site 2
 site
 summary:Entities are separated by one or more dashes
 ";
-                Assert.AreEqual(target, trio);
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
             }
         }
 
@@ -109,7 +109,7 @@ val:Zinc:
   b,a
   20,10
 ";
-                Assert.AreEqual(target, trio);
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
             }
         }
     }

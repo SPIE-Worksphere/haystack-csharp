@@ -225,7 +225,11 @@ namespace ProjectHaystack
 
         public void CopyTo(KeyValuePair<string, HVal>[] array, int arrayIndex)
         {
-            ((IDictionary<string, HVal>)m_map).CopyTo(array, arrayIndex);
+            foreach (var key in GetKeys())
+            {
+                array[arrayIndex] = new KeyValuePair<string, HVal>(key, this[key]);
+                arrayIndex++;
+            }
         }
 
         public bool Remove(KeyValuePair<string, HVal> item)
@@ -235,12 +239,12 @@ namespace ProjectHaystack
 
         public IEnumerator<KeyValuePair<string, HVal>> GetEnumerator()
         {
-            return ((IDictionary<string, HVal>)m_map).GetEnumerator();
+            return GetKeys().Select(key => new KeyValuePair<string, HVal>(key, this[key])).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IDictionary<string, HVal>)m_map).GetEnumerator();
+            return GetEnumerator();
         }
 
         protected virtual ICollection<string> GetKeys() => m_map.Keys;
