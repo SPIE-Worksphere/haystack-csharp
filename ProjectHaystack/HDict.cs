@@ -14,37 +14,37 @@ using ProjectHaystack.io;
 
 namespace ProjectHaystack
 {
-    // Remember Haystack definition - "Dict: an associated array of name/value tag pairs"
+    /// <summary>
+    /// Haystack dictionary, consists of name/value pairs.
+    /// </summary>
     public class HDict : HVal, IDictionary<string, HVal>
     {
-        // Internal instance of HDict that is of type MapImpl
-        //   that is an empty set of tags
-        private static readonly object padlock = new object();
-        private readonly Dictionary<string, HVal> m_map;
-        private Lazy<int> m_hashCode;
+        private static HDict _empty = new HDict(new Dictionary<string, HVal>());
+        private readonly IDictionary<string, HVal> m_map;
 
-        // Constructor - not a singleton pattern 
+        /// <summary>
+        /// Creates an instance of HDict with an initial list of values.
+        /// </summary>
+        /// <param name="map">Values list.</param>
         public HDict(Dictionary<string, HVal> map)
         {
             m_map = map;
-            m_hashCode = new Lazy<int>(()
-                => this.Aggregate(33, (x, kv) => x ^= (kv.Key.GetHashCode() << 7) ^ kv.Value.GetHashCode()));
         }
 
-        // Singleton pattern to single instance of empty
-        public static HDict Empty
+        /// <summary>
+        /// Creates an instance of HDict with an initial list of values.
+        /// </summary>
+        /// <param name="map">Values list.</param>
+        public HDict(IDictionary<string, HVal> map)
         {
-            get
-            {
-                return new HDict(new Dictionary<string, HVal>());
-            }
+            m_map = map;
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // Access - these should be overridden by derived classes
-        //////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// A singleton empty HDict.
+        /// </summary>
+        public static HDict Empty => _empty;
 
-        // return number of pairs - should be overriden in derived classes
         public virtual int Size => GetValues().Count;
 
         public ICollection<string> Keys => GetKeys();
@@ -136,7 +136,8 @@ namespace ProjectHaystack
         public string toString() { return toZinc(); }
 
         // Hash code is based on tags 
-        public override int GetHashCode() => m_hashCode.Value;
+        public override int GetHashCode()
+            => this.Aggregate(33, (x, kv) => x ^= (kv.Key.GetHashCode() << 7) ^ kv.Value.GetHashCode());
 
         // Equality is tags same Dict with same contents
         public override bool Equals(object that)
@@ -188,7 +189,7 @@ namespace ProjectHaystack
             return HJsonWriter.valToString(this);
         }
 
-        public void Add(string key, HVal value)
+        public virtual void Add(string key, HVal value)
         {
             ((IDictionary<string, HVal>)m_map).Add(key, value);
         }
@@ -198,7 +199,7 @@ namespace ProjectHaystack
             return ((IDictionary<string, HVal>)m_map).ContainsKey(key);
         }
 
-        public bool Remove(string key)
+        public virtual bool Remove(string key)
         {
             return ((IDictionary<string, HVal>)m_map).Remove(key);
         }
@@ -254,28 +255,5 @@ namespace ProjectHaystack
         protected virtual HVal GetValue(string key) => m_map.ContainsKey(key) ? m_map[key] : null;
 
         protected virtual void SetValue(string key, HVal value) => m_map[key] = value;
-
-
-        //////////////////////////////////////////////////////////////////////////
-        // MapImpl - I see no benefit to this and is not defined in Haystack
-        //            .NET has keyValuePair if needed and suspect the toEntry
-        //            static entry was to satisfy Java hashmap not needed with
-        //            a .NET Dictionairy object.  Still Singleton above just removed
-        //            the unnecessary subclass.
-        //////////////////////////////////////////////////////////////////////////
-
-        /*
-        // Can't be static and derive from hDict
-        public class MapImpl : HDict
-        {
-            //private Dictionary<string, HVal> m_map;
-            // Dictionary is a close but not exact match to a java hash map
-            public MapImpl (Dictionary<string, HVal> map)
-            {
-                m_map = map;
-            }
-
-
-        }*/
     }
 }

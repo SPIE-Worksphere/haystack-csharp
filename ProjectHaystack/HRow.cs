@@ -31,6 +31,21 @@ namespace ProjectHaystack
         //////////////////////////////////////////////////////////////////////////
         public HGrid Grid { get; }
 
+        public HDict ToDict()
+        {
+            return new HDict(GetKeys().ToDictionary(key => key, key => GetValue(key)));
+        }
+
+        public override void Add(string key, HVal value)
+        {
+            throw new NotImplementedException("Cannot add values to a row as it will affect the entire grid");
+        }
+
+        public override bool Remove(string key)
+        {
+            throw new NotImplementedException("Cannot remove values from a row as it will affect the entire grid");
+        }
+
         protected override HVal GetValue(string key) =>
             m_lazyKeyIndexes.Value.ContainsKey(key) ? m_cells[m_lazyKeyIndexes.Value[key]] : null;
 
