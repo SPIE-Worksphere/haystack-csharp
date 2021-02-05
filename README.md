@@ -50,6 +50,12 @@ var auth = new AutodetectAuthenticator(user, pass);
 var client = new HttpAsyncClient(auth, uri);
 ```
 
+### Opening the connection
+
+```C#
+client.OpenAsync();
+```
+
 ### Simple call
 
 One of the simplest calls is the call of the "about" page which contains some basic information about the server. This call requires no content, so it simply sends an empty grid.
