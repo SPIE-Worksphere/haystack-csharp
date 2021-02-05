@@ -48,26 +48,34 @@ namespace ProjectHaystack.io
                 }
                 _trioWriter.Write(":");
                 if (kv.Value is HGrid)
+                {
                     _trioWriter.Write("Zinc:");
-                var val = HZincWriter.valToString(kv.Value);
-                if (val.Contains("\\n"))
-                    val = val.Replace("\\n", "\n");
-                if (!val.Contains("\n"))
-                {
-                    if (val.StartsWith("\"") && val.EndsWith("\"") && _safeCharsRegex.IsMatch(val.Substring(1, val.Length - 2)))
-                        val = val.Substring(1, val.Length - 2);
-                    _trioWriter.WriteLine(val.TrimEnd());
+                    _trioWriter.WriteLine();
+                    var val = HZincWriter.valToString(kv.Value);
+                    foreach (var line in val.TrimEnd().Split(new[] { "\n" }, StringSplitOptions.None))
+                    {
+                        _trioWriter.Write("  ");
+                        _trioWriter.WriteLine(line.TrimEnd());
+                    }
                 }
-                else
+                else if (kv.Value is HStr strValue && strValue.Value.Contains("\n"))
                 {
-                    if (val.StartsWith("\"") && val.EndsWith("\""))
-                        val = val.Substring(1, val.Length - 2);
+                    var val = strValue.Value;
                     _trioWriter.WriteLine();
                     foreach (var line in val.TrimEnd().Split(new[] { "\n" }, StringSplitOptions.None))
                     {
                         _trioWriter.Write("  ");
                         _trioWriter.WriteLine(line.TrimEnd());
                     }
+                }
+                else
+                {
+                    var val = HZincWriter.valToString(kv.Value);
+                    if (val.Contains("\\n"))
+                        val = val.Replace("\\n", "\n");
+                    if (val.StartsWith("\"") && val.EndsWith("\"") && _safeCharsRegex.IsMatch(val.Substring(1, val.Length - 2)))
+                        val = val.Substring(1, val.Length - 2);
+                    _trioWriter.WriteLine(val.TrimEnd());
                 }
             }
         }
