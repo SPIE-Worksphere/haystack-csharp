@@ -76,6 +76,39 @@ strTag:""Not ok if unquoted (with unsafe chars).""
         }
 
         [TestMethod]
+        public void WriteEntity_QuotedString_IsValid()
+        {
+            using (var writer = new StringWriter())
+            {
+                // Arrange.
+                var trioWriter = new TrioWriter(writer);
+                var entity = new HDict(new Dictionary<string, HVal>
+                {
+                    ["dis"] = HStr.make("Site 1"),
+                    ["site"] = HMarker.VAL,
+                    ["area"] = HNum.make(3702, "ft²"),
+                    ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
+                    ["geoCoord"] = HCoord.make(37.5458, -77.4491),
+                    ["strTag"] = HStr.make("Line with \"inline\" quotes."),
+                });
+
+                // Act.
+                trioWriter.WriteEntity(entity);
+                var trio = writer.ToString();
+
+                // Assert.
+                var target = @"dis:Site 1
+site
+area:3702ft²
+geoAddr:""100 Main St, Richmond, VA""
+geoCoord:C(37.5458,-77.4491)
+strTag:""Line with \""inline\"" quotes.""
+";
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
         public void WriteEntity_MultiLineString_IsValid()
         {
             using (var writer = new StringWriter())
@@ -104,6 +137,41 @@ geoAddr:""100 Main St, Richmond, VA""
 geoCoord:C(37.5458,-77.4491)
 summary:
   This is a string value which spans multiple
+  lines with two or more space characters
+";
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
+        public void WriteEntity_MultiLineQuotedString_IsValid()
+        {
+            using (var writer = new StringWriter())
+            {
+                // Arrange.
+                var trioWriter = new TrioWriter(writer);
+                var entity = new HDict(new Dictionary<string, HVal>
+                {
+                    ["dis"] = HStr.make("Site 1"),
+                    ["site"] = HMarker.VAL,
+                    ["area"] = HNum.make(3702, "ft²"),
+                    ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
+                    ["geoCoord"] = HCoord.make(37.5458, -77.4491),
+                    ["summary"] = HStr.make("This is a string value with \"quotes\" or (unsafe) characters which spans multiple\nlines with two or more space characters"),
+                });
+
+                // Act.
+                trioWriter.WriteEntity(entity);
+                var trio = writer.ToString();
+
+                // Assert.
+                var target = @"dis:Site 1
+site
+area:3702ft²
+geoAddr:""100 Main St, Richmond, VA""
+geoCoord:C(37.5458,-77.4491)
+summary:
+  This is a string value with ""quotes"" or (unsafe) characters which spans multiple
   lines with two or more space characters
 ";
                 Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
