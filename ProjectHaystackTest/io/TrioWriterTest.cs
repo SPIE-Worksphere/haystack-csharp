@@ -10,7 +10,108 @@ namespace ProjectHaystackTest.io
     public class TrioWriterTest
     {
         [TestMethod]
-        public void ReadEntities_TwoEntities_IsValid()
+        public void WriteEntity_SafeString_IsValid()
+        {
+            using (var writer = new StringWriter())
+            {
+                // Arrange.
+                var trioWriter = new TrioWriter(writer);
+                var entity = new HDict(new Dictionary<string, HVal>
+                {
+                    ["dis"] = HStr.make("Site 1"),
+                    ["site"] = HMarker.VAL,
+                    ["area"] = HNum.make(3702, "ft²"),
+                    ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
+                    ["geoCoord"] = HCoord.make(37.5458, -77.4491),
+                    ["strTag"] = HStr.make("OK if unquoted if only safe chars"),
+                });
+
+                // Act.
+                trioWriter.WriteEntity(entity);
+                var trio = writer.ToString();
+
+                // Assert.
+                var target = @"dis:Site 1
+site
+area:3702ft²
+geoAddr:""100 Main St, Richmond, VA""
+geoCoord:C(37.5458,-77.4491)
+strTag:OK if unquoted if only safe chars
+";
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
+        public void WriteEntity_UnsafeString_IsValid()
+        {
+            using (var writer = new StringWriter())
+            {
+                // Arrange.
+                var trioWriter = new TrioWriter(writer);
+                var entity = new HDict(new Dictionary<string, HVal>
+                {
+                    ["dis"] = HStr.make("Site 1"),
+                    ["site"] = HMarker.VAL,
+                    ["area"] = HNum.make(3702, "ft²"),
+                    ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
+                    ["geoCoord"] = HCoord.make(37.5458, -77.4491),
+                    ["strTag"] = HStr.make("Not ok if unquoted (with unsafe chars)."),
+                });
+
+                // Act.
+                trioWriter.WriteEntity(entity);
+                var trio = writer.ToString();
+
+                // Assert.
+                var target = @"dis:Site 1
+site
+area:3702ft²
+geoAddr:""100 Main St, Richmond, VA""
+geoCoord:C(37.5458,-77.4491)
+strTag:""Not ok if unquoted (with unsafe chars).""
+";
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
+        public void WriteEntity_MultiLineString_IsValid()
+        {
+            using (var writer = new StringWriter())
+            {
+                // Arrange.
+                var trioWriter = new TrioWriter(writer);
+                var entity = new HDict(new Dictionary<string, HVal>
+                {
+                    ["dis"] = HStr.make("Site 1"),
+                    ["site"] = HMarker.VAL,
+                    ["area"] = HNum.make(3702, "ft²"),
+                    ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
+                    ["geoCoord"] = HCoord.make(37.5458, -77.4491),
+                    ["summary"] = HStr.make("This is a string value which spans multiple\nlines with two or more space characters"),
+                });
+
+                // Act.
+                trioWriter.WriteEntity(entity);
+                var trio = writer.ToString();
+
+                // Assert.
+                var target = @"dis:Site 1
+site
+area:3702ft²
+geoAddr:""100 Main St, Richmond, VA""
+geoCoord:C(37.5458,-77.4491)
+summary:
+  This is a string value which spans multiple
+  lines with two or more space characters
+";
+                Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
+        public void WriteEntities_TwoEntities_IsValid()
         {
             using (var writer = new StringWriter())
             {
@@ -58,7 +159,7 @@ summary:Entities are separated by one or more dashes
         }
 
         [TestMethod]
-        public void ReadEntities_NestedGrid_IsValid()
+        public void WriteEntities_NestedGrid_IsValid()
         {
             using (var writer = new StringWriter())
             {
