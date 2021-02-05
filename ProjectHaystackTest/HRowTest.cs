@@ -140,6 +140,30 @@ namespace ProjectHaystackTest
             Assert.AreEqual(HStr.make("str"), array[1].Value);
         }
 
+        [TestMethod]
+        public void testAdd()
+        {
+            var row = BuildRows(new[] { "x", "y" }, new HVal[] { HMarker.VAL, HStr.make("y") }).First();
+            Assert.ThrowsException<NotImplementedException>(() => row.Add("z", HMarker.VAL));
+        }
+
+        [TestMethod]
+        public void testRemove()
+        {
+            var row = BuildRows(new[] { "x", "y" }, new HVal[] { HMarker.VAL, HStr.make("y") }).First();
+            Assert.ThrowsException<NotImplementedException>(() => row.Remove("y"));
+        }
+
+        [TestMethod]
+        public void testToDict()
+        {
+            var row = BuildRows(new[] { "x", "y" }, new HVal[] { HMarker.VAL, HStr.make("y") }).First();
+            var dict = row.ToDict();
+            Assert.AreEqual(2, dict.Size);
+            Assert.AreEqual(HMarker.VAL, dict["x"]);
+            Assert.AreEqual(HStr.make("y"), dict["y"]);
+        }
+
         private IEnumerable<HRow> BuildRows(ICollection<string> cols, params HVal[][] rows)
         {
             var gridBuilder = new HGridBuilder();

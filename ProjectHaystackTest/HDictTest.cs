@@ -187,5 +187,25 @@ namespace ProjectHaystackTest
             Assert.AreEqual("y", array[1].Key);
             Assert.AreEqual(HStr.make("str"), array[1].Value);
         }
+
+        [TestMethod]
+        public void testAdd()
+        {
+            HDict dict = new HDictBuilder().add("x").add("y").toDict();
+            dict.Add("z", HStr.make("z"));
+            Assert.AreEqual(3, dict.Size);
+            Assert.AreEqual(HMarker.VAL, dict["x"]);
+            Assert.AreEqual(HMarker.VAL, dict["y"]);
+            Assert.AreEqual(HStr.make("z"), dict["z"]);
+        }
+
+        [TestMethod]
+        public void testRemove()
+        {
+            HDict dict = new HDictBuilder().add("x").add("y", "str").toDict();
+            dict.Remove("y");
+            Assert.AreEqual(1, dict.Size);
+            Assert.AreEqual(HMarker.VAL, dict["x"]);
+        }
     }
 }
