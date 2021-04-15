@@ -43,7 +43,7 @@ namespace ProjectHaystack
 
         private static bool isValidType(string t)
         {
-            if (string.IsNullOrEmpty(t) || char.IsUpper(t[0])) return false;
+            if (string.IsNullOrEmpty(t) || !char.IsUpper(t[0])) return false;
             char[] chars = t.ToCharArray();
             for (int i = 0; i < chars.Length; ++i)
             {
