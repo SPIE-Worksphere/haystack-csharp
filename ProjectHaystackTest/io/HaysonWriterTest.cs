@@ -39,7 +39,7 @@ namespace ProjectHaystackTest.io
     ""_kind"": ""Marker""
   },
   ""area"": {
-    ""_kind"": ""Num"",
+    ""_kind"": ""number"",
     ""val"": 3702.0,
     ""unit"": ""ft²""
   },
@@ -84,7 +84,7 @@ namespace ProjectHaystackTest.io
     ""_kind"": ""Marker""
   },
   ""area"": {
-    ""_kind"": ""Num"",
+    ""_kind"": ""number"",
     ""val"": 3702.0,
     ""unit"": ""ft²""
   },
@@ -137,7 +137,7 @@ namespace ProjectHaystackTest.io
       ""_kind"": ""Marker""
     },
     ""area"": {
-      ""_kind"": ""Num"",
+      ""_kind"": ""number"",
       ""val"": 3702.0,
       ""unit"": ""ft²""
     },
@@ -203,12 +203,12 @@ namespace ProjectHaystackTest.io
     ""rows"": [
       {
         ""b"": {
-          ""_kind"": ""Num"",
+          ""_kind"": ""number"",
           ""val"": 20.0,
           ""unit"": null
         },
         ""a"": {
-          ""_kind"": ""Num"",
+          ""_kind"": ""number"",
           ""val"": 10.0,
           ""unit"": null
         }

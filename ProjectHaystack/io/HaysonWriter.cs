@@ -101,7 +101,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Num");
+                _haysonWriter.WriteValue("number");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue(numValue.doubleval);
                 _haysonWriter.WritePropertyName("unit");
