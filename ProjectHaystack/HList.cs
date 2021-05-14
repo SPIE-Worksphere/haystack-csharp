@@ -8,7 +8,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using Newtonsoft.Json;
+using ProjectHaystack.io;
 
 namespace ProjectHaystack
 {
@@ -93,8 +96,12 @@ namespace ProjectHaystack
 
         public override string toJson()
         {
-            // YET TO DO - Implement
-            throw new NotImplementedException();
+            using (var textWriter = new StringWriter())
+            {
+                var haysonWriter = new HaysonWriter(textWriter);
+                haysonWriter.WriteValue(this);
+                return textWriter.ToString();
+            }
         }
 
         public override int GetHashCode() => m_lstItems.GetHashCode();

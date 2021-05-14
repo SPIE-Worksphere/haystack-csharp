@@ -53,5 +53,23 @@ namespace ProjectHaystackTest
             verifyZinc(HList.EMPTY, "[]");
             // TODO: more tests
         }
+
+        [TestMethod]
+        public void testJson()
+        {
+            // Arrange.
+            HRef hrefTest = HRef.make("a");
+            HStr str = HStr.make("string");
+            List<HVal> items = new List<HVal>();
+            items.Add(hrefTest);
+            items.Add(str);
+            HList list = HList.make(items);
+
+            // Act.
+            var json = list.toJson();
+
+            // Assert.
+            Assert.AreEqual("[{\"_kind\":\"Ref\",\"val\":\"a\",\"dis\":\"a\"},\"string\"]", json);
+        }
     }
 }
