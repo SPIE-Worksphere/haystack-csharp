@@ -65,8 +65,7 @@ namespace ProjectHaystack
 
         public override string toJson()
         {
-            // YET TO TO - Implement this
-            throw new NotImplementedException();
+            return $"{{ \"_kind\": \"xstr\", \"type\": \"{Type}\", \"val\": {HStr.make(Val).toJson()} }}";
         }
 
         public override int GetHashCode() => Type.GetHashCode() * 31 + Val.GetHashCode();
