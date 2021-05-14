@@ -24,24 +24,28 @@ namespace ProjectHaystack.io
             _trioReader = new StreamReader(trioStream, null, false, 1024, true);
         }
 
-        public HGrid ToGrid()
+        public HaystackGrid ToGrid()
         {
             // Gather entities and unique keys.
             var entities = ReadEntities().ToArray();
             var keys = entities.SelectMany(d => d.Keys).Distinct().ToArray();
 
             // Build the grid.
-            var builder = new HGridBuilder();
+            var grid = new HaystackGrid();
             foreach (var key in keys)
-                builder.addCol(key);
+            {
+                grid.AddColumn(key);
+            }
             foreach (var entity in entities)
-                builder.addRow(keys.Select(key => entity.ContainsKey(key) ? entity[key] : null).ToArray());
-            return builder.toGrid();
+            {
+                grid.AddRow(keys.Select(key => entity.ContainsKey(key) ? entity[key] : null).ToArray());
+            }
+            return grid;
         }
 
-        public IEnumerable<HDict> ReadEntities()
+        public IEnumerable<HaystackDictionary> ReadEntities()
         {
-            var entity = new Dictionary<string, HVal>();
+            var entity = new Dictionary<string, HaystackValue>();
 
             string line = _trioReader.ReadLine();
             while (line != null)
@@ -59,8 +63,8 @@ namespace ProjectHaystack.io
                     // If some values are collected, yield the entity.
                     if (entity.Count > 0)
                     {
-                        yield return new HDict(entity);
-                        entity = new Dictionary<string, HVal>();
+                        yield return new HaystackDictionary(entity);
+                        entity = new Dictionary<string, HaystackValue>();
                     }
                     // Move to the next line and continue.
                     line = _trioReader.ReadLine();
@@ -86,16 +90,16 @@ namespace ProjectHaystack.io
                         switch (textFormat)
                         {
                             case TextFormat.String:
-                                entity.Add(key, HStr.make(valBuilder.ToString().Trim()));
+                                entity.Add(key, new HaystackString(valBuilder.ToString().Trim()));
                                 break;
                             case TextFormat.Zinc:
-                                entity.Add(key, new HZincReader(valBuilder.ToString()).readVal());
+                                entity.Add(key, new ZincReader(valBuilder.ToString()).ReadValue());
                                 break;
                             case TextFormat.Trio:
                                 var entities = new TrioReader(valBuilder.ToString()).ReadEntities().ToArray();
                                 var val = entities.Length == 1
-                                    ? (HVal)entities[0]
-                                    : HList.make(entities);
+                                    ? (HaystackValue)entities[0]
+                                    : new HaystackList(entities);
                                 entity.Add(key, val);
                                 break;
                         }
@@ -106,16 +110,18 @@ namespace ProjectHaystack.io
                         if (parts.Length == 1)
                         {
                             // Marker tag.
-                            entity.Add(key, HMarker.VAL);
+                            entity.Add(key, new HaystackMarker());
                         }
                         else
                         {
                             var val = parts[1].Trim();
                             // Quote any "safe" strings.
                             if (_safeCharsRegex.IsMatch(val))
+                            {
                                 val = $@"""{val}""";
+                            }
                             // Decode the value using Zinc.
-                            entity.Add(key, new HZincReader(val).readVal());
+                            entity.Add(key, new ZincReader(val).ReadValue());
                         }
                     }
                 }
@@ -125,7 +131,7 @@ namespace ProjectHaystack.io
             }
             // If some values are collected, yield the entity.
             if (entity.Count > 0)
-                yield return new HDict(entity);
+                yield return new HaystackDictionary(entity);
         }
 
         public void Dispose()

@@ -1,18 +1,19 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace ProjectHaystack.io
 {
-    public class HaysonWriter
+    public class HaysonWriter : IDisposable
     {
-        private readonly JsonWriter _haysonWriter;
+        private JsonWriter _haysonWriter;
 
         public HaysonWriter(JsonWriter writer)
         {
             _haysonWriter = writer;
         }
 
-        public HaysonWriter(TextWriter writer) 
+        public HaysonWriter(TextWriter writer)
             : this(new JsonTextWriter(writer))
         {
         }
@@ -22,29 +23,42 @@ namespace ProjectHaystack.io
         {
         }
 
-        public void WriteGrid(HGrid grid)
+        public static string ToHayson(HaystackValue val)
+        {
+            using (var stream = new MemoryStream())
+            using (var streamWriter = new StreamWriter(stream))
+            using (var writer = new HaysonWriter(streamWriter))
+            {
+                writer.WriteValue(val);
+                streamWriter.Flush();
+                stream.Position = 0;
+                return new StreamReader(stream).ReadToEnd();
+            }
+        }
+
+        public void WriteGrid(HaystackGrid grid)
         {
             _haysonWriter.WriteStartObject();
             _haysonWriter.WritePropertyName("_kind");
             _haysonWriter.WriteValue("Grid");
 
-            if (grid.meta != null && !grid.meta.isEmpty())
+            if (grid.Meta != null && !grid.Meta.IsEmpty())
             {
                 _haysonWriter.WritePropertyName("meta");
-                WriteValue(grid.meta);
+                WriteValue(grid.Meta);
             }
 
             _haysonWriter.WritePropertyName("cols");
             _haysonWriter.WriteStartArray();
-            foreach (var col in grid.Cols)
+            foreach (var col in grid.Columns)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("name");
                 _haysonWriter.WriteValue(col.Name);
-                if (col.meta != null && !col.meta.isEmpty())
+                if (col.Meta != null && !col.Meta.IsEmpty())
                 {
                     _haysonWriter.WritePropertyName("meta");
-                    WriteValue(col.meta);
+                    WriteValue(col.Meta);
                 }
                 _haysonWriter.WriteEndObject();
             }
@@ -61,7 +75,7 @@ namespace ProjectHaystack.io
             _haysonWriter.WriteEndObject();
         }
 
-        public void WriteEntities(params HDict[] entities)
+        public void WriteEntities(params HaystackDictionary[] entities)
         {
             _haysonWriter.WriteStartArray();
             foreach (var entity in entities)
@@ -71,7 +85,7 @@ namespace ProjectHaystack.io
             _haysonWriter.WriteEndArray();
         }
 
-        public void WriteEntity(HDict entity)
+        public void WriteEntity(HaystackDictionary entity)
         {
             _haysonWriter.WriteStartObject();
             foreach (var kv in entity)
@@ -85,36 +99,36 @@ namespace ProjectHaystack.io
             _haysonWriter.WriteEndObject();
         }
 
-        public void WriteValue(HVal value)
+        public void WriteValue(HaystackValue value)
         {
             if (value == null)
             {
                 _haysonWriter.WriteNull();
                 return;
             }
-            if (value is HStr strValue)
+            if (value is HaystackString strValue)
             {
                 _haysonWriter.WriteValue(strValue.Value);
                 return;
             }
-            if (value is HNum numValue)
+            if (value is HaystackNumber numValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("number");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue(numValue.doubleval);
+                _haysonWriter.WriteValue(numValue.Value);
                 _haysonWriter.WritePropertyName("unit");
-                _haysonWriter.WriteValue(numValue.unit);
+                _haysonWriter.WriteValue(numValue.Unit);
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HBool boolValue)
+            if (value is HaystackBoolean boolValue)
             {
-                _haysonWriter.WriteValue(boolValue.val);
+                _haysonWriter.WriteValue(boolValue.Value);
                 return;
             }
-            if (value is HList listValue)
+            if (value is HaystackList listValue)
             {
                 _haysonWriter.WriteStartArray();
                 foreach (var val in listValue)
@@ -124,17 +138,17 @@ namespace ProjectHaystack.io
                 _haysonWriter.WriteEndArray();
                 return;
             }
-            if (value is HDict dictValue)
+            if (value is HaystackDictionary dictValue)
             {
                 WriteEntity(dictValue);
                 return;
             }
-            if (value is HGrid gridValue)
+            if (value is HaystackGrid gridValue)
             {
                 WriteGrid(gridValue);
                 return;
             }
-            if (value is HMarker)
+            if (value is HaystackMarker)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
@@ -142,7 +156,7 @@ namespace ProjectHaystack.io
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HRemove)
+            if (value is HaystackRemove)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
@@ -150,7 +164,7 @@ namespace ProjectHaystack.io
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HNA)
+            if (value is HaystackNotAvailable)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
@@ -158,73 +172,73 @@ namespace ProjectHaystack.io
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HRef refValue)
+            if (value is HaystackReference refValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Ref");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue(refValue.val);
+                _haysonWriter.WriteValue(refValue.Value);
                 _haysonWriter.WritePropertyName("dis");
-                _haysonWriter.WriteValue(refValue.display());
+                _haysonWriter.WriteValue(refValue.Display);
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HDate dateValue)
+            if (value is HaystackDate dateValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Date");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue($"{dateValue.Year:d4}-{dateValue.Month:d2}-{dateValue.Day:d2}");
+                _haysonWriter.WriteValue($"{dateValue.Value.Year:d4}-{dateValue.Value.Month:d2}-{dateValue.Value.Day:d2}");
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HTime timeValue)
+            if (value is HaystackTime timeValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Ref");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue($"{timeValue.Hour:d2}-{timeValue.Minute:d2}-{timeValue.Second:d2}");
+                _haysonWriter.WriteValue($"{timeValue.Value.Hours:d2}-{timeValue.Value.Minutes:d2}-{timeValue.Value.Seconds:d2}");
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HDateTime dateTimeValue)
+            if (value is HaystackDateTime dateTimeValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Ref");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue(dateTimeValue.CopyOfDTO.ToString("o"));
+                _haysonWriter.WriteValue(dateTimeValue.Value.ToString("o"));
                 _haysonWriter.WritePropertyName("tz");
                 _haysonWriter.WriteValue(dateTimeValue.TimeZone.ToString());
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HUri uriValue)
+            if (value is HaystackUri uriValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Uri");
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue(uriValue.UriVal);
+                _haysonWriter.WriteValue(uriValue.Value);
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HCoord coordValue)
+            if (value is HaystackCoordinate coordValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
                 _haysonWriter.WriteValue("Coord");
                 _haysonWriter.WritePropertyName("lat");
-                _haysonWriter.WriteValue(coordValue.lat);
+                _haysonWriter.WriteValue(coordValue.Latitude);
                 _haysonWriter.WritePropertyName("lng");
-                _haysonWriter.WriteValue(coordValue.lng);
+                _haysonWriter.WriteValue(coordValue.Longitude);
                 _haysonWriter.WriteEndObject();
                 return;
             }
-            if (value is HXStr xStrValue)
+            if (value is HaystackXString xStrValue)
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
@@ -232,9 +246,18 @@ namespace ProjectHaystack.io
                 _haysonWriter.WritePropertyName("type");
                 _haysonWriter.WriteValue(xStrValue.Type);
                 _haysonWriter.WritePropertyName("val");
-                _haysonWriter.WriteValue(xStrValue.Val);
+                _haysonWriter.WriteValue(xStrValue.Value);
                 _haysonWriter.WriteEndObject();
                 return;
+            }
+        }
+        public void Dispose()
+        {
+            if (_haysonWriter != null)
+            {
+                var writer = _haysonWriter;
+                _haysonWriter = null;
+                ((IDisposable)writer).Dispose();
             }
         }
     }

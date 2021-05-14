@@ -22,14 +22,14 @@ namespace ProjectHaystack.io
             _trioWriter = new StreamWriter(trioStream, null, 1024, true);
         }
 
-        public void WriteGrid(HGrid grid)
+        public void WriteGrid(HaystackGrid grid)
         {
             foreach (var row in grid.Rows)
                 WriteEntity(row);
         }
 
 
-        public void WriteEntity(HDict entity)
+        public void WriteEntity(HaystackDictionary entity)
         {
             if (isFirst)
                 isFirst = false;
@@ -41,26 +41,26 @@ namespace ProjectHaystack.io
                 if (kv.Value == null)
                     continue;
                 _trioWriter.Write(kv.Key);
-                if (kv.Value == HMarker.VAL)
+                if (kv.Value is HaystackMarker)
                 {
                     _trioWriter.WriteLine();
                     continue;
                 }
                 _trioWriter.Write(":");
-                if (kv.Value is HGrid)
+                if (kv.Value is HaystackGrid)
                 {
                     _trioWriter.Write("Zinc:");
                     _trioWriter.WriteLine();
-                    var val = HZincWriter.valToString(kv.Value);
+                    var val = ZincWriter.ToZinc(kv.Value);
                     foreach (var line in val.TrimEnd().Split(new[] { "\n" }, StringSplitOptions.None))
                     {
                         _trioWriter.Write("  ");
                         _trioWriter.WriteLine(line.TrimEnd());
                     }
                 }
-                else if (kv.Value is HStr strValue && strValue.Value.Contains("\n"))
+                else if (kv.Value is HaystackString stringValue && stringValue.Value.Contains("\n"))
                 {
-                    var val = strValue.Value;
+                    var val = stringValue.Value;
                     _trioWriter.WriteLine();
                     foreach (var line in val.TrimEnd().Split(new[] { "\n" }, StringSplitOptions.None))
                     {
@@ -70,7 +70,7 @@ namespace ProjectHaystack.io
                 }
                 else
                 {
-                    var val = HZincWriter.valToString(kv.Value);
+                    var val = ZincWriter.ToZinc(kv.Value);
                     if (val.Contains("\\n"))
                         val = val.Replace("\\n", "\n");
                     if (val.StartsWith("\"") && val.EndsWith("\"") && _safeCharsRegex.IsMatch(val.Substring(1, val.Length - 2)))
