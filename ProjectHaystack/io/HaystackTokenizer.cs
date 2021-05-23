@@ -1,178 +1,119 @@
-﻿//
-// Copyright (c) 2018
-// Licensed under the Academic Free License version 3.0
-//
-// History:
-//   22 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
-//   18 Aug 2018 Ian Davies This does not pass Unit tests for HBoolTest.testZinc - problem is the ZincReader and 
-//                          Tokenizer pass over the one character zinc before it is tokenised and used.
-//                          Changed logic to get the variables initialised without moving past the required tokens
-//
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Globalization;
+using System.IO;
+using System.Text;
+using ProjectHaystack.Validation;
 
 namespace ProjectHaystack.io
 {
     public class HaystackTokenizer : IDisposable
     {
-        //////////////////////////////////////////////////////////////////////////
-        // Fields
-        //////////////////////////////////////////////////////////////////////////
+        private StreamReader _sourceReader;
 
-        private HaystackToken m_tok; // current token type
-        private object m_val;        //token literal or identifier
-        private int m_iLine = 1;             // current line number
+        private int _currentLineNumber = 1;
+        private HaystackToken _currentToken = HaystackToken.eof;
+        private object _currentValue;
+        private int _currentChar;
 
-        private StreamReader m_srIn;   // underlying stream
-        private int m_cCur;           // current char
-        private int m_cPeek;          // next char
-        private bool m_bInitial;
-        private const int m_iEOF = -1;
-        private NumberFormatInfo m_numberFormat = CultureInfo.InvariantCulture.NumberFormat;
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private int _peekChar;
 
-        //////////////////////////////////////////////////////////////////////////
-        // Fields
-        //////////////////////////////////////////////////////////////////////////
-        public object Val { get { return m_val; } }
-        public int Line { get { return m_iLine; } }
-        public HaystackToken Token { get { return m_tok; } }
-            
-        //////////////////////////////////////////////////////////////////////////
-        // IDisposable
-        //////////////////////////////////////////////////////////////////////////
-        protected virtual void Dispose(bool disposing)
+        private bool _atStart = true;
+        private const int _endOfFile = -1;
+
+        private NumberFormatInfo _numberFormat = CultureInfo.InvariantCulture.NumberFormat;
+
+        public HaystackTokenizer(StreamReader reader)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    m_srIn.Dispose();
-                    m_srIn = null;
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
+            _sourceReader = reader;
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~HaystackTokenizer() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
+        public object Val => _currentValue;
+        public int LineNumber => _currentLineNumber;
+        public HaystackToken Token => _currentToken;
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
-        //////////////////////////////////////////////////////////////////////////
-        // Construction
-        //////////////////////////////////////////////////////////////////////////
-
-        public HaystackTokenizer(StreamReader instrm)
-        {
-            m_srIn = instrm;
-            m_tok = HaystackToken.eof;
-            m_bInitial = true;
-            //consume();
-            //consume();
-        }
-        // Changed to IDisposable 
-        public void close()
-        {
-            Dispose();
+            if (_sourceReader != null)
+            {
+                var reader = _sourceReader;
+                _sourceReader = null;
+                reader.Dispose();
+            }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // Tokenizing
-        //////////////////////////////////////////////////////////////////////////
-
-        public HaystackToken next()
+        public HaystackToken Next()
         {
-            if (m_bInitial)
+            if (_atStart)
             {
                 consume();
                 consume();
-                m_bInitial = false;
+                _atStart = false;
             }
             // reset
-            m_val = null;
+            _currentValue = null;
 
             // skip non-meaningful whitespace and comments
-            int startLine = m_iLine;
+            int startLine;
             while (true) // This is valid but not how I would implement a loop - may change to something more robust later
             {
                 // treat space, tab, non-breaking space as whitespace
-                if (m_cCur != m_iEOF)
+                if (_currentChar != _endOfFile)
                 {
-                    if ((char)m_cCur == ' ' || (char)m_cCur == '\t' || (char)m_cCur == 0xa0)
+                    if ((char)_currentChar == ' ' || (char)_currentChar == '\t' || (char)_currentChar == 0xa0)
                     {
                         consume();
                         continue;
                     }
 
                     // comments
-                    if ((char)m_cCur == '/')
+                    if ((char)_currentChar == '/')
                     {
-                        if ((char)m_cPeek == '/') { skipCommentsSL(); continue; }
-                        if ((char)m_cPeek == '*') { skipCommentsML(); continue; }
+                        if ((char)_peekChar == '/') { skipCommentsSL(); continue; }
+                        if ((char)_peekChar == '*') { skipCommentsML(); continue; }
                     }
                 }
                 break;
             }
-            if (m_cCur != m_iEOF)
+
+            if (_currentChar != _endOfFile)
             {
                 // newlines
-                if ((char)m_cCur == '\n' || (char)m_cCur == '\r')
+                if ((char)_currentChar == '\n' || (char)_currentChar == '\r')
                 {
-                    if ((char)m_cCur == '\r' && (char)m_cPeek == '\n') consume('\r');
+                    if ((char)_currentChar == '\r' && (char)_peekChar == '\n') consume('\r');
                     consume();
-                    ++m_iLine;
-                    return m_tok = HaystackToken.nl;
+                    ++_currentLineNumber;
+                    return _currentToken = HaystackToken.nl;
                 }
             }
-            //if ((m_bCurInit) && (m_bEOF)) return m_tok = HaystackToken.eof;
+
             // handle various starting chars
-            if (m_cCur >= 0)
+            if (_currentChar >= 0)
             {
-                if (isIdStart(m_cCur)) return m_tok = id();
-                if (m_cCur == '"') return m_tok = str();
-                if (m_cCur == '@') return m_tok = refh();
-                if (isDigit(m_cCur)) return m_tok = num();
-                if (m_cCur == '`') return m_tok = uri();
-                if (m_cCur == '-' && isDigit(m_cPeek)) return m_tok = num();
+                if (isIdStart(_currentChar)) return _currentToken = ReadId();
+                if (_currentChar == '"') return _currentToken = ReadString();
+                if (_currentChar == '@') return _currentToken = ReadReference();
+                if (isDigit(_currentChar)) return _currentToken = ReadNumber();
+                if (_currentChar == '`') return _currentToken = ReadUri();
+                if (_currentChar == '-' && isDigit(_peekChar)) return _currentToken = ReadNumber();
             }
 
-            return m_tok = symbol();
+            return _currentToken = symbol();
         }
 
         //////////////////////////////////////////////////////////////////////////
         // Token Productions
         //////////////////////////////////////////////////////////////////////////
 
-        private HaystackToken id()
+        private HaystackToken ReadId()
         {
             StringBuilder s = new StringBuilder();
-            while (isIdPart(m_cCur))
+            while (isIdPart(_currentChar))
             {
-                s.Append((char)m_cCur);
+                s.Append((char)_currentChar);
                 consume();
             }
-            m_val = s.ToString();
+            _currentValue = s.ToString();
             return HaystackToken.id;
         }
 
@@ -201,18 +142,18 @@ namespace ProjectHaystack.io
             //return '0' >= cur && cur <= '9';
         }
 
-        private HaystackToken num()
+        private HaystackToken ReadNumber()
         {
-            string strDecNumSep = m_numberFormat.NumberDecimalSeparator;
+            string strDecNumSep = _numberFormat.NumberDecimalSeparator;
             char cNumSep = '.';
             if (strDecNumSep.Length == 1)
                 cNumSep = strDecNumSep[0];
             bool bHex = false;
-            if (m_cCur < 0) err("unexpected eof in num");
-            if (!(m_cCur < 0 || m_cPeek < 0))
+            if (_currentChar < 0) err("unexpected eof in num");
+            if (!(_currentChar < 0 || _peekChar < 0))
             {
                 // hex number (no unit allowed)
-                bHex = (char)m_cCur == '0' && (char)m_cPeek == 'x';
+                bHex = (char)_currentChar == '0' && (char)_peekChar == 'x';
             }
             bool bExit = false;
             if (bHex)
@@ -223,21 +164,21 @@ namespace ProjectHaystack.io
                 bExit = false;
                 while (!bExit)
                 {
-                    if (HaystackTokenizer.isHex(m_cCur))
+                    if (HaystackTokenizer.isHex(_currentChar))
                     {
-                        sb01.Append((char)m_cCur);
+                        sb01.Append((char)_currentChar);
                         consume();
                     }
-                    else if (m_cCur == '_')
+                    else if (_currentChar == '_')
                         consume();
                     else
                         bExit = true;
                 }
-                m_val = HNum.make(Int64.Parse(sb01.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)); 
+                _currentValue = new HaystackNumber(long.Parse(sb01.ToString(), NumberStyles.AllowHexSpecifier));
                 return HaystackToken.num;
             }
             // consume all things that might be part of this number token
-            StringBuilder s = new StringBuilder().Append((char)m_cCur);
+            var builder = new StringBuilder().Append((char)_currentChar);
             consume();
             int colons = 0;
             int dashes = 0;
@@ -246,32 +187,32 @@ namespace ProjectHaystack.io
             bExit = false;
             while (!bExit)
             {
-                if (m_cCur >= 0) // Check for eof
+                if (_currentChar >= 0) // Check for eof
                 {
-                    if (!char.IsDigit((char)m_cCur))
+                    if (!char.IsDigit((char)_currentChar))
                     {
-                        if (exp && (m_cCur == '+' || m_cCur == '-')) { }
-                        else if (m_cCur == '-') { ++dashes; }
-                        else if ((m_cPeek >= 0) && (m_cCur == ':') && (char.IsDigit((char)m_cPeek)))
+                        if (exp && (_currentChar == '+' || _currentChar == '-')) { }
+                        else if (_currentChar == '-') { ++dashes; }
+                        else if ((_peekChar >= 0) && (_currentChar == ':') && (char.IsDigit((char)_peekChar)))
                         {
                             ++colons;
                         }
-                        else if ((exp || colons >= 1) && m_cCur == '+') { }
-                        else if (m_cCur == cNumSep)
+                        else if ((exp || colons >= 1) && _currentChar == '+') { }
+                        else if (_currentChar == cNumSep)
                         {
-                            if (m_cPeek >= 0)
+                            if (_peekChar >= 0)
                             {
-                                if (!char.IsDigit((char)m_cPeek)) break;
+                                if (!char.IsDigit((char)_peekChar)) break;
                             }
                         }
-                        else if ((m_cPeek >= 0) && (((char)m_cCur == 'e' || (char)m_cCur == 'E') && ((char)m_cPeek == '-' || (char)m_cPeek == '+' || char.IsDigit((char)m_cPeek))))
+                        else if ((_peekChar >= 0) && (((char)_currentChar == 'e' || (char)_currentChar == 'E') && ((char)_peekChar == '-' || (char)_peekChar == '+' || char.IsDigit((char)_peekChar))))
                         {
                             exp = true;
                         }
-                        else if (char.IsLetter((char)m_cCur) || m_cCur == '%' || m_cCur == '$' || m_cCur == '/' || m_cCur > 128) { if (unitIndex == 0) unitIndex = s.Length; }
-                        else if ((m_cPeek >= 0) && (m_cCur == '_'))
+                        else if (char.IsLetter((char)_currentChar) || _currentChar == '%' || _currentChar == '$' || _currentChar == '/' || _currentChar > 128) { if (unitIndex == 0) unitIndex = builder.Length; }
+                        else if ((_peekChar >= 0) && (_currentChar == '_'))
                         {
-                            if (unitIndex == 0 && char.IsDigit((char)m_cPeek))
+                            if (unitIndex == 0 && char.IsDigit((char)_peekChar))
                             {
                                 consume();
                                 continue;
@@ -279,7 +220,7 @@ namespace ProjectHaystack.io
                             else
                             {
                                 if (unitIndex == 0)
-                                    unitIndex = s.Length;
+                                    unitIndex = builder.Length;
                             }
                         }
                         else
@@ -291,15 +232,15 @@ namespace ProjectHaystack.io
                 else bExit = true;
                 if (!bExit)
                 {
-                    s.Append((char)m_cCur);
+                    builder.Append((char)_currentChar);
                     consume();
                 }
             }
 
-            if (dashes == 2 && colons == 0) return date(s.ToString());
-            if (dashes == 0 && colons >= 1) return time(s, colons == 1);
-            if (dashes >= 2) return dateTime(s);
-            return number(s.ToString(), unitIndex);
+            if (dashes == 2 && colons == 0) return date(builder.ToString());
+            if (dashes == 0 && colons >= 1) return time(builder, colons == 1);
+            if (dashes >= 2) return dateTime(builder);
+            return number(builder.ToString(), unitIndex);
         }
 
         private static bool isHex(int cur)
@@ -313,20 +254,54 @@ namespace ProjectHaystack.io
 
         private HaystackToken date(string s)
         {
-            // Java use to bubble Parse exception as err - this just accepts that the debug printing
-            //  will be done by the user of this toolkit.
-            m_val = HDate.make(s);
+            DateTime dtParsed;
+            if (!DateTime.TryParseExact(s, "yyyy'-'MM'-'dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dtParsed))
+            {
+                throw new FormatException("Invalid date string: " + s);
+            }
+            _currentValue = new HaystackDate(dtParsed.Year, dtParsed.Month, dtParsed.Day);
             return HaystackToken.date;
         }
 
         // we don't require hour to be two digits and we don't require seconds 
         private HaystackToken time(StringBuilder s, bool addSeconds)
         {
-            // Java use to bubble Parse exception as err - this just accepts that the debug printing
-            //  will be done by the user of this toolkit.
-            if (s[1] == ':') s.Insert(0, '0');
-            if (addSeconds) s.Append(":00");
-            m_val = HTime.make(s.ToString());
+            if (s[1] == ':')
+            {
+                s.Insert(0, '0');
+            }
+            if (addSeconds)
+            {
+                s.Append(":00");
+            }
+
+            string strToConv = s.ToString();
+            DateTime dtParsed = DateTime.Now;
+            string strFormat = "";
+            if (strToConv.Contains("."))
+            {
+                strFormat = "HH:mm:ss.fff";
+                // Unit tests show that the fff can't be more than 3 chars
+                int iDotPos = strToConv.IndexOf(".");
+                if ((strToConv.Length - iDotPos > 3) && (strToConv.Length > 12))
+                    strToConv = strToConv.Substring(0, 12);
+                else if ((strToConv.Length - iDotPos < 4) && (strToConv.Length < 12))
+                {
+                    // HH:mm:ss.ff
+                    int iAddZeros = 3 - (strToConv.Length - iDotPos - 1);
+                    for (int i = 0; i < iAddZeros; i++)
+                        strToConv += '0';
+                }
+            }
+            else
+            {
+                strFormat = "HH:mm:ss";
+            }
+            if (!DateTime.TryParseExact(strToConv, strFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dtParsed))
+            {
+                throw new FormatException("Invalid time string: " + s);
+            }
+            _currentValue = new HaystackTime(dtParsed.TimeOfDay);
             return HaystackToken.time;
         }
 
@@ -334,7 +309,7 @@ namespace ProjectHaystack.io
         {
             bool bFlag1 = true;
             // xxx timezone
-            if ((m_cCur < 0 || m_cPeek < 0) || ((char)m_cCur != ' ' || !char.IsUpper((char)m_cPeek)))
+            if ((_currentChar < 0 || _peekChar < 0) || ((char)_currentChar != ' ' || !char.IsUpper((char)_peekChar)))
             {
                 if (s[s.Length - 1] == 'Z') s.Append(" UTC");
                 else err("Expecting timezone");
@@ -344,18 +319,249 @@ namespace ProjectHaystack.io
             {
                 consume();
                 s.Append(' ');
-                while (isIdPart(m_cCur)) { s.Append((char)m_cCur); consume(); }
+                while (isIdPart(_currentChar)) { s.Append((char)_currentChar); consume(); }
 
                 // handle GMT+xx or GMT-xx
-                if ((m_cCur == '+' || m_cCur == '-') && s.ToString().EndsWith("GMT"))
+                if ((_currentChar == '+' || _currentChar == '-') && s.ToString().EndsWith("GMT"))
                 {
-                    s.Append((char)m_cCur); consume();
-                    while (isDigit(m_cCur)) { s.Append((char)m_cCur); consume(); }
+                    s.Append((char)_currentChar); consume();
+                    while (isDigit(_currentChar)) { s.Append((char)_currentChar); consume(); }
                 }
             }
-            // Java use to bubble Parse exception as err - this just accepts that the debug printing
-            //  will be done by the user of this toolkit.
-            m_val = HDateTime.make(s.ToString(), true);
+
+            // Tested 17.06.2018 with 2018-06-17T13:00:00.123+10:00 Melbourne
+            string sCurrent = s.ToString();
+            bool bUTC = false;
+            bool bNoZoneOffset = false;
+            string strDateTimeOnly = "";
+            string strDateTimeOffsetFormatSpecifier = "";
+            string strHTimeZone = "";
+            int iPosOfLastSecondChar, iPosOfSpaceBeforeTZID = 0;
+
+            DateTimeOffset dto;
+            TimeSpan tsOffset = new TimeSpan();
+            if (sCurrent.Contains('W'))
+            {
+                throw new FormatException("Invalid DateTime format for string " + s + " ISO8601 W specifier not supported by this toolkit");
+            }
+            if (sCurrent.Trim().Contains("Z UTC"))
+            {
+                bUTC = true;
+                int iPos = sCurrent.IndexOf('Z');
+                iPosOfLastSecondChar = iPos - 1;
+                strDateTimeOnly = sCurrent.Substring(0, iPos);
+            }
+            else if (sCurrent.Trim().Contains("Z"))
+            {
+                bUTC = true;
+                int iPos = sCurrent.IndexOf('Z');
+                iPosOfLastSecondChar = iPos - 1;
+                strDateTimeOnly = sCurrent.Substring(0, iPos);
+            }
+            if (!sCurrent.Contains('T'))
+            {
+                // Only possible in ISO 8601 with just a date - this is not an allowed case for Haystack DateTime
+                throw new FormatException("Invalid DateTime format for string " + s + " missing ISO8601 T specifier");
+            }
+            // if it is offset with name then it must have a + or - sign for the offset after the T 
+            int iPosOfT = sCurrent.IndexOf('T');
+            if (iPosOfT + 1 >= sCurrent.Length)
+            {
+                // Nothing after 'T' this is not legal
+                throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier");
+            }
+
+            // Stip of the timezone by finding the space
+            iPosOfSpaceBeforeTZID = sCurrent.IndexOf(' ', iPosOfT);
+            int iEndLen = iPosOfSpaceBeforeTZID - (iPosOfT + 1);
+            string sEnd = sCurrent.Substring(iPosOfT + 1, iEndLen);
+            if (!bUTC)
+            {
+                if ((sEnd.Trim().Contains('+')) || (sEnd.Trim().Contains('-')))
+                {
+                    bool bPositive = false;
+                    int iPosSign = 0;
+                    // In ISO 8601 this is either a +/-hh:mm or +/-hhmm or +/-hh
+                    // See how many characters there is till space - that is the offset specifier
+                    if (sEnd.Trim().Contains('+'))
+                    {
+                        bPositive = true;
+                        iPosSign = sCurrent.IndexOf('+', iPosOfT);
+                    }
+                    else
+                        iPosSign = sCurrent.IndexOf('-', iPosOfT);
+                    iPosOfLastSecondChar = iPosSign - 1;
+                    strDateTimeOnly = sCurrent.Substring(0, iPosSign);
+                    // Find the next space - requires it contains a Haystack Zone specifier if not UTC
+                    int iPosSpace = sCurrent.Trim().IndexOf(' ', iPosSign);
+                    if ((iPosSpace < iPosSign) || (iPosSpace < 0))
+                    {
+                        throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier");
+                    }
+                    // What is the number of characters between the sign and the space - 5 4 or 2
+                    iPosOfSpaceBeforeTZID = iPosSpace;
+                    int iNumOffsetChars = iPosSpace - iPosSign - 1;
+                    string strOffset = sCurrent.Substring(iPosSign + 1, iNumOffsetChars);
+                    if (iNumOffsetChars == 5)
+                    {
+                        // Assume +/-hh:mm
+                        string[] strHM = strOffset.Split(':');
+                        if (strHM.Length != 2)
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+
+                        int iHour;
+                        if (!int.TryParse(strHM[0], out iHour))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (iHour < 0)
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+
+                        int iMinute;
+                        if (!int.TryParse(strHM[1], out iMinute))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if ((iMinute < 0) || (iMinute > 60))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (!bPositive)
+                        {
+                            // Problem: if minute is non-zero we will get undesired result e.g. -10:10 will return -9:50 therefore both must be negative
+                            iMinute = iMinute * -1;
+                            iHour = iHour * -1;
+                        }
+                        tsOffset = new TimeSpan(iHour, iMinute, 0);
+                    }
+                    else if (iNumOffsetChars == 4)
+                    {
+                        int iHour;
+                        // Assume hhmm
+                        if (!int.TryParse(strOffset.Substring(0, 2), out iHour))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (iHour < 0)
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+
+                        int iMinute;
+                        if (!int.TryParse(strOffset.Substring(2, 2), out iMinute))
+                        {
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if ((iMinute < 0) || (iMinute > 60))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (!bPositive)
+                        {
+                            // Problem: if minute is non-zero we will get undesired result e.g. -10:10 will return -9:50 therefore both must be negative
+                            iMinute = iMinute * -1;
+                            iHour = iHour * -1;
+                        }
+                        tsOffset = new TimeSpan(iHour, iMinute, 0);
+                    }
+                    else if (iNumOffsetChars == 2)
+                    {
+                        // Assume hh
+                        int iHour;
+                        // Assume hhmm
+                        if (!int.TryParse(strOffset, out iHour))
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (iHour < 0)
+                        {
+                            // Invalid offset
+                            throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                        }
+                        if (!bPositive)
+                        {
+                            iHour = iHour * -1;
+                        }
+                        tsOffset = new TimeSpan(iHour, 0, 0);
+                    }
+                    else
+                    {
+                        // Invalid offset
+                        throw new FormatException("Invalid DateTime format for string " + s + " missing suitable length string after ISO8601 T specifier for offset");
+                    }
+
+                }
+                else
+                {
+                    // Must not contain a Zone offset string
+                    bNoZoneOffset = true;
+                    iPosOfSpaceBeforeTZID = sCurrent.IndexOf(' ', iPosOfT);
+                    strDateTimeOnly = sCurrent.Substring(0, iPosOfSpaceBeforeTZID);
+                }
+            }
+            // Get the Haystack time zone identifier and create the HTimeZone object.
+            if ((iPosOfSpaceBeforeTZID < sCurrent.Length) && (sCurrent.Length - iPosOfSpaceBeforeTZID > 2) && (!bUTC))
+                strHTimeZone = sCurrent.Substring(iPosOfSpaceBeforeTZID + 1);
+            // Check for the 'T' for the Formats that include that
+            // Check for milliseconds
+            if (strDateTimeOnly.Trim().Contains("."))
+            {
+                // All fields with 'T'
+                strDateTimeOffsetFormatSpecifier = "yyyy-MM-dd'T'HH:mm:ss.FFF";
+            }
+            else
+            {
+                // no milliseconds
+                // DateTimeOffset will adopt 0 milliseconds
+                strDateTimeOffsetFormatSpecifier = "yyyy-MM-dd'T'HH:mm:ss";
+            }
+            try
+            {
+                DateTime dt = DateTime.ParseExact(strDateTimeOnly, strDateTimeOffsetFormatSpecifier, CultureInfo.InvariantCulture);
+                if (!bNoZoneOffset)
+                    dto = new DateTimeOffset(dt, tsOffset);
+                else if (bUTC)
+                {
+                    DateTime dtutc = System.DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+                    dto = new DateTimeOffset(dtutc);
+                }
+                else
+                    dto = new DateTimeOffset(dt);
+            }
+            catch (Exception)
+            {
+                throw new FormatException("Invalid DateTime format for string " + s);
+            }
+            HaystackTimeZone htz;
+            if (bUTC)
+            {
+                htz = HaystackTimeZone.UTC;
+            }
+            else
+            {
+                try
+                {
+                    htz = new HaystackTimeZone(strHTimeZone);
+                }
+                catch (Exception genexcep)
+                {
+                    throw new FormatException("Invalid DateTime format for string " + s + " for Timezone [" + genexcep.Message + "]");
+                }
+            }
+            _currentValue = new HaystackDateTime(dto, htz);
             return HaystackToken.dateTime;
         }
 
@@ -365,13 +571,13 @@ namespace ProjectHaystack.io
             {
                 if (unitIndex == 0)
                 {
-                    m_val = HNum.make(Double.Parse(s, m_numberFormat));
+                    _currentValue = new HaystackNumber(double.Parse(s, _numberFormat));
                 }
                 else
                 {
                     string doubleStr = s.Substring(0, unitIndex);
                     string unitStr = s.Substring(unitIndex);
-                    m_val = HNum.make(Double.Parse(doubleStr, m_numberFormat), unitStr);
+                    _currentValue = new HaystackNumber(double.Parse(doubleStr, _numberFormat), unitStr);
                 }
             }
             catch (Exception)
@@ -381,32 +587,32 @@ namespace ProjectHaystack.io
             return HaystackToken.num;
         }
 
-        private HaystackToken str()
+        private HaystackToken ReadString()
         {
             consume('"');
             StringBuilder s = new StringBuilder();
             while (true)
             {
-                if (m_cCur == m_iEOF) err("Unexpected end of str");
-                if ((char)m_cCur == '"') { consume('"'); break; }
-                if ((char)m_cCur == '\\') { s.Append(escape()); continue; }
-                s.Append((char)m_cCur);
+                if (_currentChar == _endOfFile) err("Unexpected end of str");
+                if ((char)_currentChar == '"') { consume('"'); break; }
+                if ((char)_currentChar == '\\') { s.Append(escape()); continue; }
+                s.Append((char)_currentChar);
                 consume();
             }
-            m_val = HStr.make(s.ToString());
+            _currentValue = new HaystackString(s.ToString());
             return HaystackToken.str;
         }
 
-        private HaystackToken refh()
+        private HaystackToken ReadReference()
         {
-            if (m_cCur < 0) err("Unexpected eof in refh");
+            if (_currentChar < 0) err("Unexpected eof in refh");
             consume('@');
             StringBuilder s = new StringBuilder();
             while (true)
             {
-                if (HRef.isIdChar(m_cCur))
+                if (HaystackValidator.IsReferenceIdChar((char)_currentChar))
                 {
-                    s.Append((char)m_cCur);
+                    s.Append((char)_currentChar);
                     consume();
                 }
                 else
@@ -414,28 +620,28 @@ namespace ProjectHaystack.io
                     break;
                 }
             }
-            m_val = HRef.make(s.ToString(), null);
-            return HaystackToken.refh;
+            _currentValue = new HaystackReference(s.ToString(), null);
+            return HaystackToken.@ref;
         }
 
-        private HaystackToken uri()
+        private HaystackToken ReadUri()
         {
-            if (m_cCur < 0) err("Unexpected end of uri");
+            if (_currentChar < 0) err("Unexpected end of uri");
             consume('`');
             StringBuilder s = new StringBuilder();
             while (true)
             {
-                if ((m_cCur < (int)char.MinValue) || (m_cCur > (int)char.MaxValue))
-                    err("Unexpected character in uri at a value of " + m_cCur.ToString());
-                if ((char)m_cCur == '`')
+                if ((_currentChar < (int)char.MinValue) || (_currentChar > (int)char.MaxValue))
+                    err("Unexpected character in uri at a value of " + _currentChar.ToString());
+                if ((char)_currentChar == '`')
                 {
                     consume('`');
                     break;
                 }
-                if (m_cCur == m_iEOF || (char)m_cCur == '\n') err("Unexpected end of uri");
-                if ((char)m_cCur == '\\')
+                if (_currentChar == _endOfFile || (char)_currentChar == '\n') err("Unexpected end of uri");
+                if ((char)_currentChar == '\\')
                 {
-                    switch ((char)m_cPeek)
+                    switch ((char)_peekChar)
                     {
                         case ':':
                         case '/':
@@ -448,8 +654,8 @@ namespace ProjectHaystack.io
                         case '&':
                         case '=':
                         case ';':
-                            s.Append((char)m_cCur);
-                            s.Append((char)m_cPeek);
+                            s.Append((char)_currentChar);
+                            s.Append((char)_peekChar);
                             consume();
                             consume();
                             break;
@@ -460,19 +666,19 @@ namespace ProjectHaystack.io
                 }
                 else
                 {
-                    s.Append((char)(m_cCur));
+                    s.Append((char)(_currentChar));
                     consume();
                 }
             }
-            m_val = HUri.make(s.ToString());
+            _currentValue = new HaystackUri(s.ToString());
             return HaystackToken.uri;
         }
 
         private char escape()
         {
-            if (m_cCur < 0) err("unexpected eof in escape");
+            if (_currentChar < 0) err("unexpected eof in escape");
             consume('\\');
-            switch ((char)m_cCur)
+            switch ((char)_currentChar)
             {
                 case 'b': consume(); return '\b';
                 case 'f': consume(); return '\f';
@@ -488,13 +694,13 @@ namespace ProjectHaystack.io
 
             // check for uxxxx
             StringBuilder esc = new StringBuilder();
-            if ((char)m_cCur == 'u')
+            if ((char)_currentChar == 'u')
             {
                 consume('u');
-                esc.Append((char)m_cCur); consume();
-                esc.Append((char)m_cCur); consume();
-                esc.Append((char)m_cCur); consume();
-                esc.Append((char)m_cCur); consume();
+                esc.Append((char)_currentChar); consume();
+                esc.Append((char)_currentChar); consume();
+                esc.Append((char)_currentChar); consume();
+                esc.Append((char)_currentChar); consume();
                 try
                 {
                     // Allows for hexadecimal - UTF 16
@@ -513,14 +719,14 @@ namespace ProjectHaystack.io
                     throw new Exception("Invalid unicode escape: " + esc.ToString() + ", general exception: " + genexcp.Message);
                 }
             }
-            err("Invalid escape sequence: " + (char)m_cCur);
+            err("Invalid escape sequence: " + (char)_currentChar);
             return (char)0x00; // this code will never execute because err throws an exception
         }
 
         private HaystackToken symbol()
         {
-            if (m_cCur == m_iEOF) return HaystackToken.eof;
-            int c = m_cCur;
+            if (_currentChar == _endOfFile) return HaystackToken.eof;
+            int c = _currentChar;
             consume();
             switch ((char)c)
             {
@@ -543,26 +749,26 @@ namespace ProjectHaystack.io
                 case ')':
                     return HaystackToken.rparen;
                 case '<':
-                    if ((char)m_cCur == '<') { consume('<'); return HaystackToken.lt2; }
-                    if ((char)m_cCur == '=') { consume('='); return HaystackToken.ltEq; }
+                    if ((char)_currentChar == '<') { consume('<'); return HaystackToken.lt2; }
+                    if ((char)_currentChar == '=') { consume('='); return HaystackToken.ltEq; }
                     return HaystackToken.lt;
                 case '>':
-                    if ((char)m_cCur == '>') { consume('>'); return HaystackToken.gt2; }
-                    if ((char)m_cCur == '=') { consume('='); return HaystackToken.gtEq; }
+                    if ((char)_currentChar == '>') { consume('>'); return HaystackToken.gt2; }
+                    if ((char)_currentChar == '=') { consume('='); return HaystackToken.gtEq; }
                     return HaystackToken.gt;
                 case '-':
-                    if ((char)m_cCur == '>') { consume('>'); return HaystackToken.arrow; }
+                    if ((char)_currentChar == '>') { consume('>'); return HaystackToken.arrow; }
                     return HaystackToken.minus;
                 case '=':
-                    if ((char)m_cCur == '=') { consume('='); return HaystackToken.eq; }
+                    if ((char)_currentChar == '=') { consume('='); return HaystackToken.eq; }
                     return HaystackToken.assign;
                 case '!':
-                    if ((char)m_cCur == '=') { consume('='); return HaystackToken.notEq; }
+                    if ((char)_currentChar == '=') { consume('='); return HaystackToken.notEq; }
                     return HaystackToken.bang;
                 case '/':
                     return HaystackToken.slash;
             }
-            if (m_cCur == m_iEOF) return HaystackToken.eof;
+            if (_currentChar == _endOfFile) return HaystackToken.eof;
             err("Unexpected symbol: '" + (char)c + "' (0x" + c.ToString("x2") + ")");
             return null; // this code will never execute because err throws an exception
         }
@@ -578,7 +784,7 @@ namespace ProjectHaystack.io
             bool bExit = false;
             while (!bExit)
             {
-                if (m_cCur == '\n' || m_cCur == m_iEOF)
+                if (_currentChar == '\n' || _currentChar == _endOfFile)
                     bExit = true;
                 else
                     consume();
@@ -593,10 +799,10 @@ namespace ProjectHaystack.io
             bool bExit = false;
             while (!bExit)
             {
-                if ((char)m_cCur == '*' && (char)m_cPeek == '/') { consume('*'); consume('/'); depth--; if (depth <= 0) break; }
-                if ((char)m_cCur == '/' && (char)m_cPeek == '*') { consume('/'); consume('*'); depth++; continue; }
-                if ((char)m_cCur == '\n') ++m_iLine;
-                if (m_cCur == m_iEOF)
+                if ((char)_currentChar == '*' && (char)_peekChar == '/') { consume('*'); consume('/'); depth--; if (depth <= 0) break; }
+                if ((char)_currentChar == '/' && (char)_peekChar == '*') { consume('/'); consume('*'); depth++; continue; }
+                if ((char)_currentChar == '\n') ++_currentLineNumber;
+                if (_currentChar == _endOfFile)
                 {
                     err("Multi-line comment not closed");
                     bExit = true; // This will never execute because err throws an exception
@@ -612,7 +818,7 @@ namespace ProjectHaystack.io
 
         private void err(string msg)
         {
-            throw new FormatException(msg + " [line " + m_iLine + "]");
+            throw new FormatException(msg + " [line " + _currentLineNumber + "]");
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -621,7 +827,7 @@ namespace ProjectHaystack.io
 
         private void consume(int expected)
         {
-            if (m_cCur != expected) err("Expected " + (char)expected);
+            if (_currentChar != expected) err("Expected " + (char)expected);
             consume();
         }
         /// <summary>
@@ -633,16 +839,16 @@ namespace ProjectHaystack.io
         {
             try
             {
-                m_cCur = m_cPeek;
-                m_cPeek = m_srIn.Read();
-                if (m_cPeek < 0) // End of stream
+                _currentChar = _peekChar;
+                _peekChar = _sourceReader.Read();
+                if (_peekChar < 0) // End of stream
                 {
-                    m_cPeek = m_iEOF;
+                    _peekChar = _endOfFile;
                 }
             }
             catch (IOException)
             {
-                m_cPeek = m_iEOF;
+                _peekChar = _endOfFile;
             }
         }
     }

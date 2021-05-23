@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>ProjectHaystack</RootNamespace>
+    <AssemblyName>ProjectHaystack.Client.BackCompat</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectHaystack\ProjectHaystack.csproj" />
+  </ItemGroup>
+
+</Project>

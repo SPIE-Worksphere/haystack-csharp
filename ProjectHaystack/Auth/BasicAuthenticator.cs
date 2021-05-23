@@ -75,13 +75,13 @@ namespace ProjectHaystack.Auth
                 {
                     if ((int)response.StatusCode != 200)
                     {
-                        throw new AuthException("Basic auth failed: " + response.StatusCode + " " + (await response.Content.ReadAsStringAsync()));
+                        throw new HaystackAuthException("Basic auth failed: " + response.StatusCode + " " + (await response.Content.ReadAsStringAsync()));
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new AuthException("basic authentication failed", e);
+                throw new HaystackAuthException("basic authentication failed", e);
             }
         }
     }

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$authors$</authors>
+    <owners>$author$</owners>
+    <license type="expression">AFL-3.0</license>
+    <projectUrl>https://github.com/Strukton-Worksphere/haystack-csharp</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>haystack backward compatibility</tags>
+    <dependencies>
+      <dependency id="ProjectHaystack.Client" version="2.0.0"/>
+    </dependencies>
+  </metadata>
+</package>

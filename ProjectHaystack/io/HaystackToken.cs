@@ -1,35 +1,16 @@
-﻿//
-// Copyright (c) 2018
-// Licensed under the Academic Free License version 3.0
-//
-// History:
-//   24 Jun 2018 Ian Davies Creation based on Java Toolkit at same time from project-haystack.org downloads
-//
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProjectHaystack.io
+﻿namespace ProjectHaystack.io
 {
     public class HaystackToken
     {
-        // Internal Properties
-        private string m_strSymbol;
-        public bool m_bliteral;    
+        public string Symbol { get; private set; }
+        public bool Literal { get; private set; }
 
-        // Access
-        public string Symbol { get { return m_strSymbol; } }
-        public bool Literal { get { return m_bliteral; } }
-
-        // Static predefined tokens
         public static HaystackToken eof = new HaystackToken("eof");
 
         public static HaystackToken id = new HaystackToken("identifier");
         public static HaystackToken num = new HaystackToken("Number", true);
         public static HaystackToken str = new HaystackToken("Str", true);
-        public static HaystackToken refh = new HaystackToken("Ref", true); // can't use ref in .NET it is a reserved keyword
+        public static HaystackToken @ref = new HaystackToken("Ref", true);
         public static HaystackToken uri = new HaystackToken("Uri", true);
         public static HaystackToken date = new HaystackToken("Date", true);
         public static HaystackToken time = new HaystackToken("Time", true);
@@ -61,38 +42,37 @@ namespace ProjectHaystack.io
 
         public HaystackToken(string symbol)
         {
-            m_strSymbol = symbol;
-            m_bliteral = false;
+            Symbol = symbol;
+            Literal = false;
         }
 
         public HaystackToken(string symbol, bool literal)
         {
-            m_strSymbol = symbol;
-            m_bliteral = literal;
+            Symbol = symbol;
+            Literal = literal;
         }
 
-        public bool hequals(object o)
+        public override bool Equals(object o)
         {
             if (this == o) return true; // reference check
             if (o == null || (!(o is HaystackToken))) return false; // null and type check
 
             HaystackToken that = (HaystackToken)o;
             // Value compare
-            if (m_bliteral != that.Literal) return false;
-            return (m_strSymbol.CompareTo(that.Symbol) == 0);
+            if (Literal != that.Literal) return false;
+            return (Symbol.CompareTo(that.Symbol) == 0);
         }
 
-        public int hashCode()
+        public override int GetHashCode()
         {
-            int result = m_strSymbol.GetHashCode();
-            result = 31 * result + (m_bliteral ? 1 : 0);
+            int result = Symbol.GetHashCode();
+            result = 31 * result + (Literal ? 1 : 0);
             return result;
         }
 
         public override string ToString()
         {
-            return m_strSymbol;
+            return Symbol;
         }
     }
-
 }
