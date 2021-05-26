@@ -149,26 +149,33 @@ namespace ProjectHaystack.io
             }
             else if (value is HaystackString str)
             {
-                var escaped = str.Value
-                    .SelectMany(chr =>
-                    {
-                        switch (chr)
+                if (str.Value == null)
+                {
+                    WriteValue(null);
+                }
+                else
+                {
+                    var escaped = str.Value
+                        .SelectMany(chr =>
                         {
-                            case ('\n'): return @"\n".ToCharArray();
-                            case ('\r'): return @"\r".ToCharArray();
-                            case ('\t'): return @"\t".ToCharArray();
-                            case ('"'): return @"\""".ToCharArray();
-                            case ('\\'): return @"\\".ToCharArray();
-                            default:
-                                if (chr < ' ')
-                                {
-                                    return (@"\u" + Convert.ToByte(chr).ToString("x4")).ToCharArray();
-                                }
-                                return new[] { chr };
-                        }
-                    })
-                    .ToArray();
-                WriteValue($@"""{new string(escaped)}""");
+                            switch (chr)
+                            {
+                                case ('\n'): return @"\n".ToCharArray();
+                                case ('\r'): return @"\r".ToCharArray();
+                                case ('\t'): return @"\t".ToCharArray();
+                                case ('"'): return @"\""".ToCharArray();
+                                case ('\\'): return @"\\".ToCharArray();
+                                default:
+                                    if (chr < ' ')
+                                    {
+                                        return (@"\u" + Convert.ToByte(chr).ToString("x4")).ToCharArray();
+                                    }
+                                    return new[] { chr };
+                            }
+                        })
+                        .ToArray();
+                    WriteValue($@"""{new string(escaped)}""");
+                }
             }
             else if (value is HaystackTime time)
             {
