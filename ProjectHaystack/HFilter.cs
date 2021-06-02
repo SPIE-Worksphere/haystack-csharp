@@ -532,6 +532,10 @@ namespace ProjectHaystack
                 m_a = a;
                 m_b = b;
             }
+
+            public HFilter A => m_a;
+            public HFilter B => m_b;
+
             public abstract string keyword();
             protected override string toStr()
             {
