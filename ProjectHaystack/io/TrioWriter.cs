@@ -8,7 +8,7 @@ namespace ProjectHaystack.io
     {
         // Strings can be left unquoted if they begin with any of these "safe" chars:
         // Any non-ASCII Unicode character, A-Z, a-z, underbar, dash, or space.
-        private Regex _safeCharsRegex = new Regex(@"^[^\x00-\x7F]|^[A-Za-z0-9_\- ]+$", RegexOptions.Compiled);
+        private Regex _safeCharsRegex = new Regex(@"^[^\x00-\x7F]|^[A-Za-z0-9_\ ]+$", RegexOptions.Compiled);
         private readonly TextWriter _trioWriter;
         private bool isFirst = true;
 

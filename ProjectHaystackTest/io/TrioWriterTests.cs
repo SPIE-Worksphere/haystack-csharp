@@ -57,6 +57,7 @@ strTag:OK if unquoted if only safe chars
                     ["geoAddr"] = new HaystackString("100 Main St, Richmond, VA"),
                     ["geoCoord"] = new HaystackCoordinate(37.5458m, -77.4491m),
                     ["strTag"] = new HaystackString("Not ok if unquoted (with unsafe chars)."),
+                    ["guid"] = new HaystackString("cc49e18d-bef0-446f-a106-17eeb7c2eb53"),
                 });
 
                 // Act.
@@ -70,6 +71,7 @@ area:3702ft²
 geoAddr:""100 Main St, Richmond, VA""
 geoCoord:C(37.5458,-77.4491)
 strTag:""Not ok if unquoted (with unsafe chars).""
+guid:""cc49e18d-bef0-446f-a106-17eeb7c2eb53""
 ";
                 Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
             }
