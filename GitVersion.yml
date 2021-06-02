@@ -1,0 +1,10 @@
+branches:
+  master:
+    regex: ^master
+    mode: ContinuousDelivery
+  release:
+    regex: ^releases?[/-]
+    mode: ContinuousDelivery
+    prevent-increment-of-merged-branch-version: true
+    is-release-branch: true
+    pre-release-weight: 1000

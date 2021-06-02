@@ -1,36 +1,108 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   branches:
     include:
       - master
-
-pr:
-  autoCancel: true # indicates whether additional pushes to a PR should cancel in-progress runs for the same PR. Defaults to true
-  branches:
-    include: [ master ] # branch names which will trigger a build
+      - release/*
 
 name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
+  - stage: Build
+    displayName: "Build and test libraries"
+    jobs:
+      - job: BuildTestPublish
+        pool:
+          vmImage: 'ubuntu-latest'
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+            displayName: "Clean source checkout"
+            clean: true
+          - task: UseDotNet@2
+            displayName: "Use .NET Core sdk"
+            inputs:
+              packageType: sdk
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+              version: "5.x"
+        
+          - task: gittools.gittools.setup-gitversion-task.gitversion/setup@0
+            displayName: "GitVersion: Setup"
+            inputs:
+              versionSpec: '5.x'
+          
+          - task: gittools.gittools.execute-gitversion-task.gitversion/execute@0
+            displayName: "GitVersion: Determine version information"
+            inputs:
+              useConfigFile: true
+              configFilePath: 'GitVersion.yml'
+          
+          - task: bleddynrichards.Assembly-Info-Task.Assembly-Info-NetCore.Assembly-Info-NetCore@2
+            displayName: "Set Assembly Manifest Data"
+            inputs:
+              InsertAttributes: true
+              Company: Strukton Worksphere
+              Copyright: "Copyright © $(date:YYYY) Strukton Worksphere"
+              VersionNumber: "$(GitVersion.AssemblySemVer)"
+              FileVersionNumber: "$(GitVersion.AssemblySemFileVer)"
+              InformationalVersion: "$(GitVersion.InformationalVersion)"
+              PackageVersion: "$(GitVersion.NuGetVersion)"
+          
+          - task: UseDotNet@2
+            displayName: "Use .NET Core sdk"
+            inputs:
+              packageType: sdk
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+              useGlobalJson: true
 
-steps:
-- checkout : self
-  clean: false
-  submodules: recursive
-  persistCredentials: true
-- task: DotNetCoreCLI@2
-  displayName: 'Build'
-  inputs:
-    command: 'build'
-    projects: '**/ProjectHaystack.sln'
+          - task: DotNetCoreCLI@2
+            displayName: "Restore dependencies for all projects"
+            inputs:
+              command: restore
+              projects: "**/*.csproj"
+              noCache: true
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/*Test.csproj'
-    testRunTitle: 'Tests'
+          - task: DotNetCoreCLI@2
+            displayName: "Pack the package ProjectHaystack"
+            continueOnError: false
+            inputs:
+              command: custom
+              custom: pack
+              arguments: "--configuration Release --no-restore --output $(Build.ArtifactStagingDirectory)/ProjectHaystack"
+              projects: "**/ProjectHaystack.csproj"
+          
+          - task: PublishBuildArtifacts@1
+            condition: ne(variables['Build.Reason'], 'PullRequest')
+            displayName: "Publish Artifact: ProjectHaystack"
+            continueOnError: false
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/ProjectHaystack"
+              ArtifactName: "ProjectHaystack"
+
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    - stage: PushToFeed
+      displayName: "Push to feed"
+      condition: succeeded()
+      jobs:
+        - deployment: PublishToFeed
+          displayName: "Publish libraries to feed"
+          environment: "NuGetFeed"
+          pool:
+            vmImage: 'ubuntu-latest'
+          workspace:
+            clean: all
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - download: current
+                  - task: NuGetToolInstaller@0
+                    displayName: "Use latest NuGet"
+                    continueOnError: false
+                  - task: NuGetCommand@2
+                    displayName: "Release to feed"
+                    inputs:
+                      command: push
+                      packagesToPush: "$(Pipeline.Workspace)/ProjectHaystack/*.nupkg" 
+                      NuGetFeedType: "external"
+                      publishFeedCredentials: "NuGet.org"
