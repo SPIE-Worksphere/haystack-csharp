@@ -57,6 +57,7 @@ strTag:OK if unquoted if only safe chars
                     ["geoAddr"] = HStr.make("100 Main St, Richmond, VA"),
                     ["geoCoord"] = HCoord.make(37.5458, -77.4491),
                     ["strTag"] = HStr.make("Not ok if unquoted (with unsafe chars)."),
+                    ["guid"] = HStr.make("cc49e18d-bef0-446f-a106-17eeb7c2eb53"),
                 });
 
                 // Act.
@@ -70,6 +71,7 @@ area:3702ft²
 geoAddr:""100 Main St, Richmond, VA""
 geoCoord:C(37.5458,-77.4491)
 strTag:""Not ok if unquoted (with unsafe chars).""
+guid:""cc49e18d-bef0-446f-a106-17eeb7c2eb53""
 ";
                 Assert.AreEqual(target.Replace("\r", ""), trio.Replace("\r", ""));
             }
