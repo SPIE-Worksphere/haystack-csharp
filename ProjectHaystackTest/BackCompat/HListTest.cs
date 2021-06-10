@@ -69,7 +69,7 @@ namespace ProjectHaystackTest
             var json = list.toJson();
 
             // Assert.
-            Assert.AreEqual("[{\"_kind\":\"Ref\",\"val\":\"a\",\"dis\":null},\"string\"]", json);
+            Assert.AreEqual("[{\"_kind\":\"ref\",\"val\":\"a\",\"dis\":null},\"string\"]", json);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace ProjectHaystack.io
         {
             _haysonWriter.WriteStartObject();
             _haysonWriter.WritePropertyName("_kind");
-            _haysonWriter.WriteValue("Grid");
+            _haysonWriter.WriteValue("grid");
 
             if (grid.Meta != null && !grid.Meta.IsEmpty())
             {
@@ -152,7 +152,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Marker");
+                _haysonWriter.WriteValue("marker");
                 _haysonWriter.WriteEndObject();
                 return;
             }
@@ -160,7 +160,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Remove");
+                _haysonWriter.WriteValue("remove");
                 _haysonWriter.WriteEndObject();
                 return;
             }
@@ -168,7 +168,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("NA");
+                _haysonWriter.WriteValue("na");
                 _haysonWriter.WriteEndObject();
                 return;
             }
@@ -176,7 +176,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Ref");
+                _haysonWriter.WriteValue("ref");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue(refValue.Value);
                 _haysonWriter.WritePropertyName("dis");
@@ -188,7 +188,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Date");
+                _haysonWriter.WriteValue("date");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue($"{dateValue.Value.Year:d4}-{dateValue.Value.Month:d2}-{dateValue.Value.Day:d2}");
                 _haysonWriter.WriteEndObject();
@@ -198,7 +198,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Ref");
+                _haysonWriter.WriteValue("time");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue($"{timeValue.Value.Hours:d2}-{timeValue.Value.Minutes:d2}-{timeValue.Value.Seconds:d2}");
                 _haysonWriter.WriteEndObject();
@@ -208,7 +208,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Ref");
+                _haysonWriter.WriteValue("dateTime");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue(dateTimeValue.Value.ToString("o"));
                 _haysonWriter.WritePropertyName("tz");
@@ -220,7 +220,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Uri");
+                _haysonWriter.WriteValue("uri");
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue(uriValue.Value);
                 _haysonWriter.WriteEndObject();
@@ -230,7 +230,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("Coord");
+                _haysonWriter.WriteValue("coord");
                 _haysonWriter.WritePropertyName("lat");
                 _haysonWriter.WriteValue(coordValue.Latitude);
                 _haysonWriter.WritePropertyName("lng");
@@ -242,7 +242,7 @@ namespace ProjectHaystack.io
             {
                 _haysonWriter.WriteStartObject();
                 _haysonWriter.WritePropertyName("_kind");
-                _haysonWriter.WriteValue("XStr");
+                _haysonWriter.WriteValue("xStr");
                 _haysonWriter.WritePropertyName("type");
                 _haysonWriter.WriteValue(xStrValue.Type);
                 _haysonWriter.WritePropertyName("val");

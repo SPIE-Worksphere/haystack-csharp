@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -36,7 +37,7 @@ namespace ProjectHaystackTest.io
                 var target = @"{
   ""dis"": ""Site 1"",
   ""site"": {
-    ""_kind"": ""Marker""
+    ""_kind"": ""marker""
   },
   ""area"": {
     ""_kind"": ""number"",
@@ -45,7 +46,7 @@ namespace ProjectHaystackTest.io
   },
   ""geoAddr"": ""100 Main St, Richmond, VA"",
   ""geoCoord"": {
-    ""_kind"": ""Coord"",
+    ""_kind"": ""coord"",
     ""lat"": 37.5458,
     ""lng"": -77.4491
   },
@@ -81,7 +82,7 @@ namespace ProjectHaystackTest.io
                 var target = @"{
   ""dis"": ""Site 1"",
   ""site"": {
-    ""_kind"": ""Marker""
+    ""_kind"": ""marker""
   },
   ""area"": {
     ""_kind"": ""number"",
@@ -90,7 +91,7 @@ namespace ProjectHaystackTest.io
   },
   ""geoAddr"": ""100 Main St, Richmond, VA"",
   ""geoCoord"": {
-    ""_kind"": ""Coord"",
+    ""_kind"": ""coord"",
     ""lat"": 37.5458,
     ""lng"": -77.4491
   },
@@ -134,7 +135,7 @@ namespace ProjectHaystackTest.io
   {
     ""dis"": ""Site 1"",
     ""site"": {
-      ""_kind"": ""Marker""
+      ""_kind"": ""marker""
     },
     ""area"": {
       ""_kind"": ""number"",
@@ -143,7 +144,7 @@ namespace ProjectHaystackTest.io
     },
     ""geoAddr"": ""100 Main St, Richmond, VA"",
     ""geoCoord"": {
-      ""_kind"": ""Coord"",
+      ""_kind"": ""coord"",
       ""lat"": 37.5458,
       ""lng"": -77.4491
     },
@@ -153,7 +154,7 @@ namespace ProjectHaystackTest.io
   {
     ""name"": ""Site 2"",
     ""site"": {
-      ""_kind"": ""Marker""
+      ""_kind"": ""marker""
     },
     ""summary"": ""Entities are separated by one or more dashes""
   }
@@ -188,7 +189,7 @@ namespace ProjectHaystackTest.io
                 var target = @"{
   ""type"": ""grid"",
   ""val"": {
-    ""_kind"": ""Grid"",
+    ""_kind"": ""grid"",
     ""cols"": [
       {
         ""name"": ""b"",
@@ -217,6 +218,33 @@ namespace ProjectHaystackTest.io
   }
 }";
                 Assert.AreEqual(target.Replace("\r", ""), hayson.Replace("\r", ""));
+            }
+        }
+
+        [TestMethod]
+        public void WriteEntity_DateTime_CorrectKind()
+        {
+            using (var writer = new StringWriter())
+            using (var jsonWriter = new JsonTextWriter(writer) { Formatting = Formatting.Indented })
+            {
+                // Arrange.
+                var haysonWriter = new HaysonWriter(jsonWriter);
+                var entity = new HaystackDictionary();
+                entity.Add("ts", new HaystackDateTime(new DateTime(2020, 1, 1), HaystackTimeZone.UTC));
+
+                // Act.
+                haysonWriter.WriteEntity(entity);
+                var hayson = writer.ToString();
+
+                // Assert.
+                var target = @"{
+  ""ts"": {
+    ""_kind"": ""dateTime"",
+    ""val"": ""2020-01-01T00:00:00.0000000+00:00"",
+    ""tz"": ""ProjectHaystack.HaystackTimeZone""
+  }
+}";
+                Assert.AreEqual(target, hayson);
             }
         }
     }
