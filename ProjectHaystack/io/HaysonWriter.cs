@@ -212,7 +212,7 @@ namespace ProjectHaystack.io
                 _haysonWriter.WritePropertyName("val");
                 _haysonWriter.WriteValue(dateTimeValue.Value.ToString("o"));
                 _haysonWriter.WritePropertyName("tz");
-                _haysonWriter.WriteValue(dateTimeValue.TimeZone.ToString());
+                _haysonWriter.WriteValue(dateTimeValue.TimeZone.Name);
                 _haysonWriter.WriteEndObject();
                 return;
             }

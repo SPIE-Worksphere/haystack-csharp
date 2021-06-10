@@ -355,7 +355,7 @@ namespace ProjectHaystack.Client
             var req = new HaystackGrid()
                 .AddColumn("id")
                 .AddColumn("range")
-                .AddRow(id, new HaystackString(range.ToString()));
+                .AddRow(id, new HaystackString(range));
             return CallAsync("hisRead", req);
         }
 

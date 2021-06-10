@@ -241,10 +241,10 @@ namespace ProjectHaystackTest.io
   ""ts"": {
     ""_kind"": ""dateTime"",
     ""val"": ""2020-01-01T00:00:00.0000000+00:00"",
-    ""tz"": ""ProjectHaystack.HaystackTimeZone""
+    ""tz"": ""UTC""
   }
 }";
-                Assert.AreEqual(target, hayson);
+                Assert.AreEqual(target.Replace("\r", ""), hayson.Replace("\r", ""));
             }
         }
     }
