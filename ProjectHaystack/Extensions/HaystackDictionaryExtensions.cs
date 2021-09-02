@@ -27,7 +27,12 @@
 
         public static bool GetBooleanUnchecked(this HaystackDictionary dict, string name)
         {
-            return dict.GetUnchecked<HaystackBoolean>(name)?.Value ?? false;
+            return dict.GetNullableBoolean(name) ?? false;
+        }
+
+        public static bool? GetNullableBoolean(this HaystackDictionary dict, string name)
+        {
+            return dict.GetUnchecked<HaystackBoolean>(name)?.Value;
         }
 
         public static HaystackReference GetReference(this HaystackDictionary dict, string name)
@@ -47,7 +52,27 @@
 
         public static double GetDoubleUnchecked(this HaystackDictionary dict, string name)
         {
-            return dict.GetUnchecked<HaystackNumber>(name)?.Value ?? 0;
+            return dict.GetNullableDouble(name) ?? 0;
+        }
+
+        public static double? GetNullableDouble(this HaystackDictionary dict, string name)
+        {
+            return dict.GetUnchecked<HaystackNumber>(name)?.Value;
+        }
+
+        public static int GetInt(this HaystackDictionary dict, string name)
+        {
+            return (int)dict.Get<HaystackNumber>(name).Value;
+        }
+
+        public static int GetIntUnchecked(this HaystackDictionary dict, string name)
+        {
+            return dict.GetNullableInt(name) ?? 0;
+        }
+
+        public static int? GetNullableInt(this HaystackDictionary dict, string name)
+        {
+            return (int?)dict.GetUnchecked<HaystackNumber>(name)?.Value;
         }
     }
 }
