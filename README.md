@@ -31,6 +31,7 @@ It can be used to do "raw" requests to the server, but it can also be used to au
 ## Usage
 
 This chapter describes some usage examples of the library.
+More examples can be found in the Examples library.
 
 ### Client creation
 
@@ -72,7 +73,7 @@ When sending more complex requests, like an Axon query in SkySpark you can build
 ```C#
 var axon = "someaxon";
 var grid = new HaystackGrid()
-	.AddColum("expr")
+	.AddColumn("expr")
 	.AddRow(new HaystackString(axon));
 HaystackGrid[] result = await client.EvalAllAsync(grid);
 ```
