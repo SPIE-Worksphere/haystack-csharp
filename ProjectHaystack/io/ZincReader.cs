@@ -351,7 +351,6 @@ namespace ProjectHaystack.io
             if ("3.0".CompareTo(s) == 0) return 3;
             if ("2.0".CompareTo(s) == 0) return 2;
             throw GetException("Unsupported version " + s);
-            return -1; // This code will not be executable due to err
         }
 
         private string ConsumeTagName()
