@@ -53,7 +53,6 @@ namespace ProjectHaystack.io
             _currentValue = null;
 
             // skip non-meaningful whitespace and comments
-            int startLine;
             while (true) // This is valid but not how I would implement a loop - may change to something more robust later
             {
                 // treat space, tab, non-breaking space as whitespace

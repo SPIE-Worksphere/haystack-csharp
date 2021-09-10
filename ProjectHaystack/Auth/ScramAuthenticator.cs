@@ -156,49 +156,35 @@ namespace ProjectHaystack.Auth
 
         private static sbyte[] Pbk(string hash, string password, string salt, int iterations)
         {
-            try
+            byte[] saltBytes = Convert.FromBase64String(salt);
+            using (var hmac = new HMACSHA256())
             {
-                byte[] saltBytes = Convert.FromBase64String(salt);
-                using (var hmac = new HMACSHA256())
-                {
-                    var mine = new Pbkdf2(hmac, Encoding.UTF8.GetBytes(password),
-                      (byte[])(Array)Convert.FromBase64String(salt), iterations);
-                    sbyte[] signed = mine.GetBytes(32);
-                    byte[] signednew = (byte[])(Array)signed;
-                    return signed;
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
+                var mine = new Pbkdf2(hmac, Encoding.UTF8.GetBytes(password),
+                    (byte[])(Array)Convert.FromBase64String(salt), iterations);
+                sbyte[] signed = mine.GetBytes(32);
+                byte[] signednew = (byte[])(Array)signed;
+                return signed;
             }
         }
 
         private static string CreateClientProof(sbyte[] saltedPassword, byte[] authMsg)
         {
-            try
+            using (var hmac = new HMACSHA256())
             {
-                using (var hmac = new HMACSHA256())
+                byte[] usSaltedPassword = (byte[])(Array)saltedPassword;
+                byte[] usAuthMsg = authMsg;
+                var hmac2 = new HMACSHA256(usSaltedPassword);
+                byte[] clientKey = hmac2.ComputeHash(Encoding.UTF8.GetBytes("Client Key"));
+                var sha1 = new SHA256Managed();
+                byte[] storedKey = sha1.ComputeHash(clientKey);
+                var hmac3 = new HMACSHA256((byte[])(Array)storedKey);
+                byte[] clientSig = hmac3.ComputeHash(authMsg);
+                byte[] clientProof = new byte[clientKey.Length];
+                for (int i = 0; i < clientKey.Length; i++)
                 {
-                    byte[] usSaltedPassword = (byte[])(Array)saltedPassword;
-                    byte[] usAuthMsg = authMsg;
-                    var hmac2 = new HMACSHA256(usSaltedPassword);
-                    byte[] clientKey = hmac2.ComputeHash(Encoding.UTF8.GetBytes("Client Key"));
-                    var sha1 = new SHA256Managed();
-                    byte[] storedKey = sha1.ComputeHash(clientKey);
-                    var hmac3 = new HMACSHA256((byte[])(Array)storedKey);
-                    byte[] clientSig = hmac3.ComputeHash(authMsg);
-                    byte[] clientProof = new byte[clientKey.Length];
-                    for (int i = 0; i < clientKey.Length; i++)
-                    {
-                        clientProof[i] = (byte)(clientKey[i] ^ clientSig[i]);
-                    }
-                    return Convert.ToBase64String(clientProof.Cast<byte>().ToArray());
+                    clientProof[i] = (byte)(clientKey[i] ^ clientSig[i]);
                 }
-            }
-            catch (Exception e)
-            {
-                throw e;
+                return Convert.ToBase64String(clientProof.Cast<byte>().ToArray());
             }
         }
     }

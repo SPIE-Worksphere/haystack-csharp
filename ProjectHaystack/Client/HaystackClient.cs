@@ -428,7 +428,7 @@ namespace ProjectHaystack.Client
         /// <param name="op">Operation to execute.</param>
         /// <param name="req">Request content.</param>
         /// <returns>Grid of results.</returns>
-        private async Task<HaystackGrid> CallAsync(string op, HaystackGrid req)
+        public async Task<HaystackGrid> CallAsync(string op, HaystackGrid req)
         {
             HaystackGrid res = await PostGridAsync(op, req);
             if (res.IsError())
