@@ -182,5 +182,17 @@ namespace ProjectHaystack.Client
         Task<HaystackGrid> PointWriteArrayAsync(HaystackReference id);
 
         #endregion Points
+
+        #region Core calls
+
+        /// <summary>
+        /// Call the given operation and throw server-side exceptions.
+        /// </summary>
+        /// <param name="op">Operation to execute.</param>
+        /// <param name="req">Request content.</param>
+        /// <returns>Grid of results.</returns>
+        Task<HaystackGrid> CallAsync(string op, HaystackGrid req);
+
+        #endregion Core calls
     }
 }
