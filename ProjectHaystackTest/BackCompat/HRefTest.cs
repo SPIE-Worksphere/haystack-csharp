@@ -17,9 +17,10 @@ namespace ProjectHaystackTest
         [TestMethod]
         public void testEquality()
         {
-            Assert.IsTrue(HRef.make("foo").hequals( HRef.make("foo")));
+            Assert.IsTrue(HRef.make("foo").hequals(HRef.make("foo")));
             Assert.IsTrue(HRef.make("foo").hequals(HRef.make("foo", "Foo")));
             Assert.IsFalse(HRef.make("foo").hequals(HRef.make("Foo")));
+            Assert.IsFalse(HRef.nullRef.hequals(HRef.nullRef));
         }
 
         [TestMethod]

@@ -7,13 +7,13 @@ namespace ProjectHaystack
     {
         public HaystackReference(string value, string dis = null)
         {
-            Value = value != null && HaystackValidator.IsReferenceId(value)
+            Value = value == null || HaystackValidator.IsReferenceId(value)
                 ? value
                 : throw new ArgumentException($"Invalid id val: {value}", "value");
             Display = dis;
         }
 
-        public static HaystackReference nullRef = new HaystackReference("null", null);
+        public static HaystackReference nullRef = new HaystackReference(null, null);
 
         public string Value { get; }
         public string Display { get; }

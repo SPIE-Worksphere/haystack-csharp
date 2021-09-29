@@ -8,7 +8,7 @@ namespace ProjectHaystack
     public class HHisItem : HDict
     {
         public HHisItem(HaystackHistoryItem source)
-            : base(M.Map(source))
+            : base(ToDictionary(source))
         {
             Source = source;
         }
@@ -25,6 +25,14 @@ namespace ProjectHaystack
             if (name.CompareTo("val") == 0) return hsVal;
             if (!bchecked) return null;
             throw new HaystackUnknownNameException("Name not known: " + name);
+        }
+
+        private static HaystackDictionary ToDictionary(HaystackHistoryItem source)
+        {
+            var dict = new HaystackDictionary();
+            dict.Add("ts", source.TimeStamp);
+            dict.Add("val", source.Value);
+            return dict;
         }
     }
 }
