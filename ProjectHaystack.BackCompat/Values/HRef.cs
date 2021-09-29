@@ -25,6 +25,6 @@ namespace ProjectHaystack
         public override string toJson() => HaysonWriter.ToHayson(M.Map(this));
         public static bool isId(string id) => HaystackValidator.IsReferenceId(id);
         public static bool isIdChar(int ch) => HaystackValidator.IsReferenceIdChar((char)ch);
-        public static HRef nullRef = M.Map(new HaystackReference(string.Empty));
+        public static HRef nullRef = M.Map(new HaystackReference(null));
     }
 }
