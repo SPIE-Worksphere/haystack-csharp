@@ -5,7 +5,7 @@
     <RootNamespace>ProjectHaystack</RootNamespace>
     <AssemblyName>ProjectHaystack.Client.BackCompat</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0</Version>
+    <Version>2.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

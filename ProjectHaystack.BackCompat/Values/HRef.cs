@@ -22,6 +22,7 @@ namespace ProjectHaystack
         public string display() => Source.Display;
         public string toCode() => "@" + Source.Value;
         public override string toZinc() => ZincWriter.ToZinc(M.Map(this));
+        public override string ToString() => Source.Value;
         public override string toJson() => HaysonWriter.ToHayson(M.Map(this));
         public static bool isId(string id) => HaystackValidator.IsReferenceId(id);
         public static bool isIdChar(int ch) => HaystackValidator.IsReferenceIdChar((char)ch);
