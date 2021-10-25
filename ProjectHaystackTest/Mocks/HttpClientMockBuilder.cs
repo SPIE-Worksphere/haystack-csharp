@@ -104,5 +104,12 @@ namespace ProjectHaystackTest.Mocks
 
             return this;
         }
+
+        public HttpClientMockBuilder WithRequestHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handleRequest)
+        {
+            _requestHandlers.Add(handleRequest);
+
+            return this;
+        }
     }
 }

@@ -431,7 +431,7 @@ namespace ProjectHaystack.Client
         public async Task<HaystackGrid> CallAsync(string op, HaystackGrid req = null)
         {
             HaystackGrid res;
-            if (req == null || req.ColumnCount == 0)
+            if (req == null || req.IsEmpty())
             {
                  res = await GetAsync(op, new Dictionary<string, string>());
             }
