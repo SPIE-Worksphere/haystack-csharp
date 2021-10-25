@@ -428,9 +428,18 @@ namespace ProjectHaystack.Client
         /// <param name="op">Operation to execute.</param>
         /// <param name="req">Request content.</param>
         /// <returns>Grid of results.</returns>
-        public async Task<HaystackGrid> CallAsync(string op, HaystackGrid req)
+        public async Task<HaystackGrid> CallAsync(string op, HaystackGrid req = null)
         {
-            HaystackGrid res = await PostGridAsync(op, req);
+            HaystackGrid res;
+            if (req == null || req.ColumnCount == 0)
+            {
+                 res = await GetAsync(op, new Dictionary<string, string>());
+            }
+            else
+            {
+                 res = await PostGridAsync(op, req);
+            }
+
             if (res.IsError())
             {
                 throw new HaystackException(res);
@@ -448,6 +457,19 @@ namespace ProjectHaystack.Client
         {
             string reqStr = ZincWriter.ToZinc(req);
             string resStr = await PostStringAsync(op, reqStr, "text/zinc");
+            return new ZincReader(resStr).ReadValue<HaystackGrid>();
+        }
+
+
+        /// <summary>
+        /// Execute a GET request and parse the raw string result into a grid.
+        /// </summary>
+        /// <param name="op">Operation to execute.</param>
+        /// <param name="params">Parameters for the GET request.</param>
+        /// <returns>Grid of results.</returns>
+        private async Task<HaystackGrid> GetAsync(string op, Dictionary<string, string> @params)
+        {
+            string resStr = await GetStringAsync(op, @params);
             return new ZincReader(resStr).ReadValue<HaystackGrid>();
         }
 
