@@ -339,7 +339,7 @@ namespace ProjectHaystack.io
 
             DateTimeOffset dto;
             TimeSpan tsOffset = new TimeSpan();
-            if (sCurrent.Contains('W'))
+            if (sCurrent.Contains("W"))
             {
                 throw new FormatException("Invalid DateTime format for string " + s + " ISO8601 W specifier not supported by this toolkit");
             }
@@ -357,7 +357,7 @@ namespace ProjectHaystack.io
                 iPosOfLastSecondChar = iPos - 1;
                 strDateTimeOnly = sCurrent.Substring(0, iPos);
             }
-            if (!sCurrent.Contains('T'))
+            if (!sCurrent.Contains("T"))
             {
                 // Only possible in ISO 8601 with just a date - this is not an allowed case for Haystack DateTime
                 throw new FormatException("Invalid DateTime format for string " + s + " missing ISO8601 T specifier");
@@ -376,13 +376,13 @@ namespace ProjectHaystack.io
             string sEnd = sCurrent.Substring(iPosOfT + 1, iEndLen);
             if (!bUTC)
             {
-                if ((sEnd.Trim().Contains('+')) || (sEnd.Trim().Contains('-')))
+                if ((sEnd.Trim().Contains("+")) || (sEnd.Trim().Contains("-")))
                 {
                     bool bPositive = false;
                     int iPosSign = 0;
                     // In ISO 8601 this is either a +/-hh:mm or +/-hhmm or +/-hh
                     // See how many characters there is till space - that is the offset specifier
-                    if (sEnd.Trim().Contains('+'))
+                    if (sEnd.Trim().Contains("+"))
                     {
                         bPositive = true;
                         iPosSign = sCurrent.IndexOf('+', iPosOfT);

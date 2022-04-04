@@ -22,7 +22,11 @@ namespace ProjectHaystack
         /// </summary>
         /// <param name="values">Values list.</param>
         public HaystackDictionary(IDictionary<string, HaystackValue> values)
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            : this(new Lazy<IDictionary<string, HaystackValue>>(() => values.Where(kv => kv.Value != null).ToDictionary(kv => kv.Key, kv => kv.Value)))
+#else
             : this(new Lazy<IDictionary<string, HaystackValue>>(new Dictionary<string, HaystackValue>(values.Where(kv => kv.Value != null))))
+#endif
         {
         }
 
@@ -78,10 +82,17 @@ namespace ProjectHaystack
 
         public override bool Equals(object other)
         {
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            if (other == null || !(other is HaystackDictionary dict) || _source.Value.Count != dict.Count)
+            {
+                return false;
+            }
+#else
             if (other == null || other is not HaystackDictionary dict || _source.Value.Count != dict.Count)
             {
                 return false;
             }
+#endif
             foreach (var key in Keys)
             {
                 if (!dict.ContainsKey(key) || !dict[key].Equals(this[key]))
@@ -100,7 +111,7 @@ namespace ProjectHaystack
             }
         }
 
-        #region Convenience methods
+#region Convenience methods
 
         public HaystackDictionary AddValue(string key, HaystackValue value)
         {
@@ -123,7 +134,7 @@ namespace ProjectHaystack
             return this;
         }
 
-        #endregion Convenience methods
+#endregion Convenience methods
 
         public bool ContainsKey(string key) => _source.Value.ContainsKey(key) && _source.Value[key] != null;
 

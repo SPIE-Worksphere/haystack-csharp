@@ -296,10 +296,17 @@ namespace ProjectHaystack.io
                 {
                     if (!bFirst) WriteValue(' ');
                     WriteValue(name);
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+                    if (!(value is HaystackMarker))
+                    {
+                        WriteValue(':').WriteValue(value);
+                    }
+#else
                     if (value is not HaystackMarker)
                     {
                         WriteValue(':').WriteValue(value);
                     }
+#endif
                     bFirst = false;
                 }
             }

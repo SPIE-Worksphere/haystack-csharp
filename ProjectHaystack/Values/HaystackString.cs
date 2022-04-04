@@ -21,11 +21,19 @@ namespace ProjectHaystack
 
         public int CompareTo(object obj)
         {
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            if (obj != null && obj is HaystackString str)
+            {
+                return Value.CompareTo(str.Value);
+            }
+            return 1;
+#else
             if (obj == null || obj is not HaystackString str)
             {
                 return 1;
             }
             return Value.CompareTo(str.Value);
+#endif
         }
     }
 }

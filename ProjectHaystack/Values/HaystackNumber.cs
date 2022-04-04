@@ -40,10 +40,17 @@ namespace ProjectHaystack
 
         public int CompareTo(object other)
         {
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            if (other == null || !(other is HaystackNumber number))
+            {
+                return 1;
+            }
+#else
             if (other == null || other is not HaystackNumber number)
             {
                 return 1;
             }
+#endif
 
             return Value.CompareTo(number.Value);
         }
