@@ -138,10 +138,17 @@ namespace ProjectHaystack
 
         public override bool Equals(object other)
         {
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            if (other == null || !(other is HaystackGrid grid))
+            {
+                return false;
+            }
+#else
             if (other == null || other is not HaystackGrid grid)
             {
                 return false;
             }
+#endif
             if (other.Equals(this))
             {
                 return true;

@@ -57,8 +57,14 @@ namespace ProjectHaystack
                 throw new ArgumentException($"Row count {values.Length} does not match col count {grid.ColumnCount}", "values");
             }
 
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            return grid.Columns
+                .Select((col, idx) => new KeyValuePair<string, HaystackValue>(col.Name, values[idx]))
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+#else
             return new Dictionary<string, HaystackValue>(grid.Columns
                 .Select((col, idx) => new KeyValuePair<string, HaystackValue>(col.Name, values[idx])));
+#endif
         }
     }
 }

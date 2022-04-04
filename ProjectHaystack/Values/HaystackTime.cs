@@ -25,10 +25,18 @@ namespace ProjectHaystack
 
         public int CompareTo(object obj)
         {
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+            if (obj == null || !(obj is HaystackTime time))
+            {
+                return 1;
+            }
+#else
             if (obj == null || obj is not HaystackTime time)
             {
                 return 1;
             }
+#endif
+
             return Value.CompareTo(time.Value);
         }
     }
