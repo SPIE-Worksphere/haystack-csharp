@@ -12,8 +12,6 @@ namespace ProjectHaystack
                 : throw new ArgumentException($"Invalid id val: {value}", "value");
         }
 
-        public static HaystackReference nullRef = new HaystackReference(null, null);
-
         public string Value { get; }
         public string Code => "^" + Value;
 
