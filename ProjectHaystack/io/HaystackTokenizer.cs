@@ -92,6 +92,7 @@ namespace ProjectHaystack.io
                 if (isIdStart(_currentChar)) return _currentToken = ReadId();
                 if (_currentChar == '"') return _currentToken = ReadString();
                 if (_currentChar == '@') return _currentToken = ReadReference();
+                if (_currentChar == '^') return _currentToken = ReadCaretSymbol();
                 if (isDigit(_currentChar)) return _currentToken = ReadNumber();
                 if (_currentChar == '`') return _currentToken = ReadUri();
                 if (_currentChar == '-' && isDigit(_peekChar)) return _currentToken = ReadNumber();
@@ -119,7 +120,6 @@ namespace ProjectHaystack.io
         private static bool isIdStart(int cur)
         {
             if (cur < 0) return false;
-            if ((char)cur == '^') return true;
             if ('a' <= (char)cur && (char)cur <= 'z') return true;
             if ('A' <= (char)cur && (char)cur <= 'Z') return true;
             return false;
@@ -621,6 +621,27 @@ namespace ProjectHaystack.io
             }
             _currentValue = new HaystackReference(s.ToString(), null);
             return HaystackToken.@ref;
+        }
+
+        private HaystackToken ReadCaretSymbol()
+        {
+            if (_currentChar < 0) err("Unexpected eof in refh");
+            consume('^');
+            StringBuilder s = new StringBuilder();
+            while (true)
+            {
+                if (HaystackValidator.IsReferenceIdChar((char)_currentChar))
+                {
+                    s.Append((char)_currentChar);
+                    consume();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            _currentValue = new HaystackCaretSymbol(s.ToString());
+            return HaystackToken.caretSymbol;
         }
 
         private HaystackToken ReadUri()

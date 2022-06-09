@@ -11,6 +11,7 @@
         public static HaystackToken num = new HaystackToken("Number", true);
         public static HaystackToken str = new HaystackToken("Str", true);
         public static HaystackToken @ref = new HaystackToken("Ref", true);
+        public static HaystackToken caretSymbol = new HaystackToken("Symbol", true);
         public static HaystackToken uri = new HaystackToken("Uri", true);
         public static HaystackToken date = new HaystackToken("Date", true);
         public static HaystackToken time = new HaystackToken("Time", true);
