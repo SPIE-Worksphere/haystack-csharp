@@ -210,6 +210,10 @@ namespace ProjectHaystack.io
             {
                 WriteValue(xstr.Type).WriteValue("(\"").WriteValue(xstr.Value).WriteValue("\")");
             }
+            else if (value is HaystackCaretSymbol caret)
+            {
+                WriteValue(caret.Code);
+            }
             else
             {
                 throw new InvalidOperationException($"Cannot write scalar value of type {value.GetType().Name}");

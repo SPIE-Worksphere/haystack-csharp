@@ -131,6 +131,12 @@ namespace ProjectHaystackTest.io
             VerifyZinc(new HaystackDefinition("^testDef"), "^testDef");
         }
 
+        [TestMethod]
+        public void TestCaretSymbol()
+        {
+            VerifyZinc(new HaystackCaretSymbol("test-symbol"), "^test-symbol");
+        }
+
         void VerifyGrid(string str, HaystackDictionary meta, object[] cols, HaystackValue[][] rows)
         {
             // normalize nulls
