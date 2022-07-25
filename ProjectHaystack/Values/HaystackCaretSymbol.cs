@@ -17,6 +17,6 @@ namespace ProjectHaystack
 
         public override int GetHashCode() => Value.GetHashCode();
 
-        public override bool Equals(object other) => other != null && other is HaystackReference reference && (reference.Value?.Equals(Value) ?? false);
+        public override bool Equals(object other) => other != null && other is HaystackCaretSymbol caretSymbol && (caretSymbol.Value?.Equals(Value) ?? false);
     }
 }

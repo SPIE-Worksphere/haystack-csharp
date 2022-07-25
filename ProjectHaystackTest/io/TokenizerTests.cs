@@ -175,6 +175,23 @@ namespace ProjectHaystackTest.io
                 });
         }
 
+        [TestMethod]
+        public void TestConjunctDef()
+        {
+            VerifyToks(
+                @"{ id: ""1234:ab"", def: ^chilled-water, is: ^water }",
+                new object[] {
+                    HaystackToken.lbrace, null,
+                    HaystackToken.id, "id", HaystackToken.colon, null, HaystackToken.str, new HaystackString("1234:ab"),
+                    HaystackToken.comma, null,
+                    HaystackToken.id, "def", HaystackToken.colon, null, HaystackToken.caretSymbol, new HaystackCaretSymbol("chilled-water"),
+                    HaystackToken.comma, null,
+                    HaystackToken.id, "is", HaystackToken.colon, null, HaystackToken.caretSymbol, new HaystackCaretSymbol("water"),
+                    HaystackToken.rbrace, null,
+                });
+        }
+
+
         private void VerifyToks(string zinc, object[] toks)
         {
             List<object> acc = new List<object>();
