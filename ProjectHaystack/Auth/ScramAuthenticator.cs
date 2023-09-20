@@ -1,5 +1,4 @@
-﻿using ProjectHaystack.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -7,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Auth
 {
@@ -115,7 +115,7 @@ namespace ProjectHaystack.Auth
             message.Headers.Authorization = new AuthenticationHeaderValue("scram",
                DictToToken(new Dictionary<string, string>
                {
-                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p=" + clientProof)),
+                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p= " + clientProof)),
                    ["handshakeToken"] = _lastMessage["handshakeToken"],
                }));
             var response = await client.SendAsync(message);
