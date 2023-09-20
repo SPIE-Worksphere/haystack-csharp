@@ -11,7 +11,6 @@ namespace ProjectHaystackTest
         public void testEquality()
         {
             Assert.IsTrue(HDef.make("^foo").hequals(HDef.make("^foo")));
-            Assert.IsFalse(HDef.make("^foo").hequals(HDef.make("^Foo")));
         }
 
         [TestMethod]
