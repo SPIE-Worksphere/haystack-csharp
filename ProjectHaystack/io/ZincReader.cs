@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ProjectHaystack.Validation;
 
 namespace ProjectHaystack.io
 {
@@ -241,6 +242,10 @@ namespace ProjectHaystack.io
             {
                 val = new HaystackReference(((HaystackReference)val).Value, ((HaystackString)_peekValue).Value);
                 Consume(HaystackToken.@ref);
+            }
+            if (val is HaystackCaretSymbol symbolValue && HaystackValidator.IsTagName(symbolValue.Value))
+            {
+                val = new HaystackDefinition(symbolValue.Code);
             }
             Consume();
             return (HaystackValue)val;

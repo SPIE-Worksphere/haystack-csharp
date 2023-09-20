@@ -241,14 +241,14 @@ namespace ProjectHaystackTest.io
                 foreach (object tok in toks)
                 {
                     if (!first) toksStr += ",";
-                    toksStr += "[" + tok.ToString() + "]";
+                    toksStr += "[" + tok?.ToString() + "]";
                     first = false;
                 }
                 first = true;
                 foreach (object tok in actual)
                 {
                     if (!first) accStr += ",";
-                    accStr += "[" + tok.ToString() + "]";
+                    accStr += "[" + tok?.ToString() + "]";
                     first = false;
                 }
 

@@ -58,7 +58,7 @@ namespace ProjectHaystackTest.Mocks
                     response.Headers.Add("WWW-Authenticate", "basic");
                     return Task.FromResult(response);
                 }
-                if (request.Headers.Authorization.Scheme == "Basic")
+                if (request.Headers.Authorization.Scheme == "Basic" && request.RequestUri.LocalPath == "/user/auth")
                 {
                     if (request.Headers.Authorization.Parameter == allowedBasicAuth)
                     {
