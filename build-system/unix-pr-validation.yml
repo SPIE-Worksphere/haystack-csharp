@@ -62,7 +62,15 @@ stages:
               custom: pack
               arguments: "--configuration Release --no-restore --output $(Build.ArtifactStagingDirectory)/ProjectHaystack"
               projects: "**/ProjectHaystack.csproj"
-          
+
+          - task: DotNetCoreCLI@2
+            displayName: "Run tests"
+            continueOnError: false
+            inputs:
+              command: test
+              arguments: "--configuration Release --no-restore --output $(Build.ArtifactStagingDirectory)/ProjectHaystack"
+              projects: "**/ProjectHaystack.csproj"
+
           - task: PublishBuildArtifacts@1
             condition: ne(variables['Build.Reason'], 'PullRequest')
             displayName: "Publish Artifact: ProjectHaystack"
