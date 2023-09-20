@@ -34,7 +34,7 @@ namespace ProjectHaystackTest
                 .First();
 
             // size
-            Assert.AreEqual(row.Count, 6);
+            Assert.AreEqual(row.Count, 5);
             Assert.IsFalse(row.IsEmpty());
 
             // configured tags

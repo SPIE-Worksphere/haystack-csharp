@@ -110,7 +110,7 @@ namespace ProjectHaystackTest
             it = g.row(1);
             Assert.IsFalse(it.Size > 3);
             verifyRowIterator(it, 0, "id", HRef.make("b"));
-            verifyRowIterator(it, 2, "area", HNum.make(1400));
+            verifyRowIterator(it, 1, "area", HNum.make(1400));
 
             // iterating
             verifyGridIterator(g);

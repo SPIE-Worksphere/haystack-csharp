@@ -35,11 +35,11 @@ namespace ProjectHaystack
             _source = source;
         }
 
-        public int Count => _source.Value.Count;
+        public int Count => Keys.Count;
 
         public HaystackReference Id => (HaystackReference)_source.Value["id"];
 
-        public ICollection<string> Keys => _source.Value.Keys;
+        public ICollection<string> Keys => _source.Value.Keys.Where(key => _source.Value[key] != null).ToArray();
 
         public virtual ICollection<HaystackValue> Values => _source.Value.Values;
 
@@ -51,7 +51,7 @@ namespace ProjectHaystack
 
         public virtual HaystackValue Get(string name)
         {
-            return _source.Value.ContainsKey(name)
+            return ContainsKey(name)
                 ? _source.Value[name] ?? throw new HaystackUnknownNameException(name)
                 : throw new HaystackUnknownNameException(name);
         }
