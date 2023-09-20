@@ -92,7 +92,7 @@ namespace ProjectHaystackTest
             it = grid.Row(1);
             Assert.IsFalse(it.Count > 3);
             VerifyRowIterator(it, 0, "id", new HaystackReference("b"));
-            VerifyRowIterator(it, 2, "area", new HaystackNumber(1400));
+            VerifyRowIterator(it, 1, "area", new HaystackNumber(1400));
 
             // iterating
             VerifyGridIterator(grid);

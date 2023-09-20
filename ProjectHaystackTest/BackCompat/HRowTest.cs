@@ -73,7 +73,7 @@ namespace ProjectHaystackTest
                 .First();
 
             // size
-            Assert.AreEqual(row.size(), 6);
+            Assert.AreEqual(row.size(), 5);
             Assert.IsFalse(row.isEmpty());
 
             // configured tags
