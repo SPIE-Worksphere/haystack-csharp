@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,7 +16,6 @@ namespace ProjectHaystack.Auth
     {
         private readonly string _username;
         private readonly string _password;
-        private string _lastMessage;
         private const string _wwwAuthenticateHeader = "WWW-Authenticate";
 
         public BasicAuthenticator(string username, string password)
@@ -37,22 +37,25 @@ namespace ProjectHaystack.Auth
                 "username=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(_username)).Trim('='));
             using (var response = await client.SendAsync(message))
             {
-                string auth = null;
+                // https://project-haystack.org/doc/docHaystack/Auth
+                // If multiple authentication mechanisms are supported, the server SHOULD specify them in order of most preferred to least preferred.
+                // So, we need to check all of them.
+                // Header example: SCRAM hash=SHA-256, handshakeToken=aabbcc, PLAINTEXT, BASIC
+                IEnumerable<string> auth = null;
                 try
                 {
-                    auth = response.Headers.GetValues(_wwwAuthenticateHeader).First();
+                    auth = response.Headers.GetValues(_wwwAuthenticateHeader);
                 }
                 catch (InvalidOperationException)
                 {
                     throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
                 }
-                _lastMessage = auth.ToLower();
-                if (_lastMessage.StartsWith("basic"))
+                if (auth.Any(x => x.StartsWith("basic", StringComparison.OrdinalIgnoreCase)))
                     return;
 
-                string server = response.Headers.GetValues("Server").FirstOrDefault()?.ToLower() ?? string.Empty;
+                string server = response.Headers.Contains("Server") ? (response.Headers.GetValues("Server").FirstOrDefault()?.ToLower() ?? string.Empty) : string.Empty;
                 // fallback to basic if server says it's Niagara; Niagara 4.6 return empry WWW-Authenticate and Server headers
-                if (server.StartsWith("niagara", StringComparison.Ordinal) || (response.StatusCode == HttpStatusCode.Unauthorized && string.IsNullOrEmpty(auth) && string.IsNullOrEmpty(server)))
+                if (server.StartsWith("niagara", StringComparison.Ordinal) || (response.StatusCode == HttpStatusCode.Unauthorized && (auth.Count() == 0 || auth.All(x => string.IsNullOrEmpty(x))) && string.IsNullOrEmpty(server)))
                     return;
 
                 // detect N4 by their bug - lolol
@@ -78,6 +81,9 @@ namespace ProjectHaystack.Auth
                         throw new HaystackAuthException("Basic auth failed: " + response.StatusCode + " " + (await response.Content.ReadAsStringAsync()));
                     }
                 }
+
+                // Set default Authorization header for following requests
+                client.DefaultRequestHeaders.Authorization = message.Headers.Authorization;
             }
             catch (Exception e)
             {
