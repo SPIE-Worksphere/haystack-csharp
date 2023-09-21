@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProjectHaystack.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -6,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using ProjectHaystack.Util;
 
 namespace ProjectHaystack.Auth
 {
@@ -135,7 +135,7 @@ namespace ProjectHaystack.Auth
         private IDictionary<string, string> TokenToDict(string token) =>
             token.Split(',')
                 .Select(s => s.Split(new[] { '=' }, 2).Select(v => v.Trim()).ToArray())
-                .ToDictionary(a => a[0], a => a[1]);
+                .ToDictionary(a => a[0], a => a.Count() > 1 ? a[1] : string.Empty);
 
         private string DictToToken(IDictionary<string, string> dict) =>
              string.Join(",", dict.Where(kv => kv.Value != null).Select(kv => $"{kv.Key}={kv.Value}"));
