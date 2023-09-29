@@ -92,7 +92,7 @@ namespace ProjectHaystack.Auth
         private async Task SendFinal(HttpClient client, Uri authUrl)
         {
             // Decode server-first-message
-            var s1_msg = Encoding.UTF8.GetString(Convert.FromBase64String(_lastMessage["data"]));
+            var s1_msg = Encoding.UTF8.GetString(FromBase64String(_lastMessage["data"]));
             var data = TokenToDict(s1_msg);
 
             // c2-no-proof
@@ -154,13 +154,26 @@ namespace ProjectHaystack.Auth
                 .ToArray());
         }
 
+        /// <summary>
+        /// Some haystack servers can trim = from base64, so we need to restore it.
+        /// Otherwise FromBase64String will throw exception.
+        /// </summary>
+        private static byte[] FromBase64String(string s)
+        {
+            if (!string.IsNullOrEmpty(s))
+            {
+                while ((s.Length * 6) % 8 != 0) s += "=";
+            }
+            return Convert.FromBase64String(s);
+        }
+
         private static sbyte[] Pbk(string hash, string password, string salt, int iterations)
         {
-            byte[] saltBytes = Convert.FromBase64String(salt);
+            byte[] saltBytes = FromBase64String(salt);
             using (var hmac = new HMACSHA256())
             {
                 var mine = new Pbkdf2(hmac, Encoding.UTF8.GetBytes(password),
-                    (byte[])(Array)Convert.FromBase64String(salt), iterations);
+                    saltBytes, iterations);
                 sbyte[] signed = mine.GetBytes(32);
                 byte[] signednew = (byte[])(Array)signed;
                 return signed;
