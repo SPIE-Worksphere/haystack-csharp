@@ -173,7 +173,7 @@ namespace ProjectHaystack.Auth
             using (var hmac = new HMACSHA256())
             {
                 var mine = new Pbkdf2(hmac, Encoding.UTF8.GetBytes(password),
-                    (byte[])(Array)FromBase64String(salt), iterations);
+                    saltBytes, iterations);
                 sbyte[] signed = mine.GetBytes(32);
                 byte[] signednew = (byte[])(Array)signed;
                 return signed;
