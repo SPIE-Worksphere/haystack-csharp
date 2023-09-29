@@ -36,11 +36,13 @@ namespace ProjectHaystack.Client
             _client = client;
             _authenticator = authenticator;
             Uri = apiUri.EndWithSlash();
-            AuthUri = new Uri(Uri, "/user/auth");
+            AuthUri = new Uri(Uri, "about");
         }
 
         /// <summary>
         /// Connect using a specified authenticator and base uri, using a default HttpClient.
+        /// Default HttpClient is static and shared between all instances of this class.
+        /// If you need to connect to several different haystack servers, you should use a different HttpClient.
         /// </summary>
         public HaystackClient(IAuthenticator authentication, Uri apiUri)
             : this(_defaultClient.Value, authentication, apiUri)
@@ -49,6 +51,8 @@ namespace ProjectHaystack.Client
 
         /// <summary>
         /// Connect using a specified base uri, using a default HttpClient and auto-detecting the authentication method.
+        /// Default HttpClient is static and shared between all instances of this class.
+        /// If you need to connect to several different haystack servers, you should use a different HttpClient.
         /// </summary>
         public HaystackClient(string username, string password, Uri apiUri)
             : this(new AutodetectAuthenticator(username, password), apiUri)
