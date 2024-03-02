@@ -24,6 +24,8 @@ namespace ProjectHaystack.Examples.Client
             var pass = "somepassword";
             var uri = new Uri("https://someserver/api/");
             var auth = new ScramAuthenticator(user, pass);
+            // When authentications fails in certain legacy systems, set this value to true.
+            auth.AddLegacySpaceToProof = true;
             var client = new HaystackClient(auth, uri);
             await client.OpenAsync();
         }
