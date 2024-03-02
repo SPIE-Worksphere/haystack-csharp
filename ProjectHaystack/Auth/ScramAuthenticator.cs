@@ -32,6 +32,13 @@ namespace ProjectHaystack.Auth
             _password = password;
         }
 
+        /// <summary>
+        /// According to RFC7804 and RFC5802 the client proof should not be sent with a space at the start of the parameter,
+        /// however, some systems use some legacy behavior where this space is required for the authentication to succeed.
+        /// When authentications fails in these legacy systems, set this value to true to rectify the problem.
+        /// </summary>
+        public bool AddLegacySpaceToProof { get; set; }
+
         public async Task Authenticate(HttpClient client, Uri authUrl)
         {
             _cnonce = GenNonce();
@@ -111,11 +118,17 @@ namespace ProjectHaystack.Auth
             var saltedPassword = Pbk(hash, _password, salt, iterations);
             var clientProof = CreateClientProof(saltedPassword, Encoding.UTF8.GetBytes(authMsg));
 
+            // Apply legacy proof behavior if requested.
+            if (AddLegacySpaceToProof)
+            {
+                clientProof = " " + clientProof;
+            }
+
             var message = new HttpRequestMessage(HttpMethod.Get, authUrl);
             message.Headers.Authorization = new AuthenticationHeaderValue("scram",
                DictToToken(new Dictionary<string, string>
                {
-                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p= " + clientProof)),
+                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p=" + clientProof)),
                    ["handshakeToken"] = _lastMessage["handshakeToken"],
                }));
             var response = await client.SendAsync(message);
