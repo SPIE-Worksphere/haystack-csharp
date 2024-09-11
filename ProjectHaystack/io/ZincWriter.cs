@@ -65,8 +65,9 @@ namespace ProjectHaystack.io
                 }
                 else
                 {
-                    val += dateTime.Value.Offset.Hours >= 0 ? "+" : "-";
-                    val += dateTime.Value.Offset.ToString(@"hh\:mm");
+                    var offset = dateTime.Value.Offset;
+                    val += offset.Hours >= 0 ? "+" : "-";
+                    val += offset.ToString(@"hh\:mm");
                     val += " ";
                     val += dateTime.TimeZone.Name;
                 }

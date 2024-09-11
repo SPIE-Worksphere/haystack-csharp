@@ -15,14 +15,13 @@ namespace ProjectHaystack
 
         public HaystackDateTime(DateTime dateTime, HaystackTimeZone timeZone)
         {
-            Value = new DateTimeOffset(dateTime.Ticks, timeZone.TimeZoneInfo.BaseUtcOffset);
+            Value = new DateTimeOffset(dateTime.Ticks, timeZone.TimeZoneInfo.GetUtcOffset(dateTime));
             TimeZone = timeZone;
         }
 
         public HaystackDateTime(HaystackDate date, HaystackTime time, HaystackTimeZone timeZone)
+            : this(date.Value + time.Value, timeZone)
         {
-            Value = new DateTimeOffset(date.Value + time.Value, timeZone.TimeZoneInfo.BaseUtcOffset);
-            TimeZone = timeZone;
         }
 
         public DateTimeOffset Value { get; private set; }

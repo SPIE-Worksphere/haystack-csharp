@@ -35,5 +35,12 @@ namespace ProjectHaystackTest
             Assert.IsTrue(new HaystackDateTime(new DateTime(2011, 1, 2, 3, 4, 5), utc).CompareTo(new HaystackDateTime(new DateTime(2012, 1, 2, 3, 4, 5), utc)) < 0);
             Assert.IsTrue(new HaystackDateTime(new DateTime(2011, 1, 2, 3, 4, 5), utc).CompareTo(new HaystackDateTime(new DateTime(2011, 1, 2, 3, 4, 0), utc)) > 0);
         }
+
+        [TestMethod]
+        public void TestTimeZoneOffset()
+        {
+            Assert.AreEqual(TimeSpan.FromHours(0), new HaystackDateTime(new DateTime(2011, 1, 2, 3, 4, 5), london).Value.Offset);
+            Assert.AreEqual(TimeSpan.FromHours(1), new HaystackDateTime(new DateTime(2011, 7, 2, 3, 4, 5), london).Value.Offset);
+        }
     }
 }

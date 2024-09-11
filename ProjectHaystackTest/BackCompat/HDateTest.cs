@@ -37,7 +37,7 @@ namespace ProjectHaystackTest
         {
             Assert.IsTrue(HDate.make(2011, 12, 1).minusDays(0).hequals(HDate.make(2011, 12, 1)));
             Assert.IsTrue(HDate.make(2011, 12, 1).minusDays(1).hequals(HDate.make(2011, 11, 30)));
-            Assert.IsTrue(HDate.make(2011, 12, 1).minusDays(-2).hequals( HDate.make(2011, 12, 3)));
+            Assert.IsTrue(HDate.make(2011, 12, 1).minusDays(-2).hequals(HDate.make(2011, 12, 3)));
             Assert.IsTrue(HDate.make(2011, 12, 1).plusDays(2).hequals(HDate.make(2011, 12, 3)));
             Assert.IsTrue(HDate.make(2011, 12, 1).plusDays(31).hequals(HDate.make(2012, 1, 1)));
             Assert.IsTrue(HDate.make(2008, 3, 3).minusDays(3).hequals(HDate.make(2008, 2, 29)));
@@ -60,8 +60,7 @@ namespace ProjectHaystackTest
         public void testMidnight()
         {
             verifyMidnight(HDate.make(2011, 11, 3), "UTC", "2011-11-03T00:00:00Z UTC");
-            // 18.08.2018 - fails on this my implementation has offset for New_York as -05:00 not -04:00 - test changed
-            verifyMidnight(HDate.make(2011, 11, 3), "New_York", "2011-11-03T00:00:00-05:00 New_York"); 
+            verifyMidnight(HDate.make(2011, 11, 3), "New_York", "2011-11-03T00:00:00-04:00 New_York");
             verifyMidnight(HDate.make(2011, 12, 15), "Chicago", "2011-12-15T00:00:00-06:00 Chicago");
             verifyMidnight(HDate.make(2008, 2, 29), "Phoenix", "2008-02-29T00:00:00-07:00 Phoenix");
         }
