@@ -65,10 +65,10 @@ namespace ProjectHaystackTest
             if (tz != null)
             {
                 ts = HDateTime.make(634429600180690000L, tz);
-                verifyZinc(ts, "2011-06-06T12:26:58.069-05:00 New_York");
+                verifyZinc(ts, "2011-06-06T12:26:58.069-04:00 New_York");
                 Assert.AreEqual(ts.date.ToString(), "2011-06-06");
                 Assert.AreEqual(ts.time.ToString(), "12:26:58.069");
-                Assert.AreEqual(ts.Offset.TotalSeconds, -5 * 60 * 60);
+                Assert.AreEqual(ts.Offset.TotalSeconds, -4 * 60 * 60);
                 Assert.AreEqual(ts.TimeZone.dntz, tziNewYork);
                 Assert.AreEqual(ts.Ticks, 634429600180690000L);
             }

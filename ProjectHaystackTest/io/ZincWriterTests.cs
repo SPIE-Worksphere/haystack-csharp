@@ -374,7 +374,7 @@ namespace ProjectHaystackTest.io
             var tz = new HaystackTimeZone("New_York");
             HaystackDateTime ts;
             ts = new HaystackDateTime(new DateTime(634429600180690000L), tz);
-            VerifyZinc(ts, "2011-06-06T12:26:58.069-05:00 New_York");
+            VerifyZinc(ts, "2011-06-06T12:26:58.069-04:00 New_York");
             Assert.AreEqual(ts.TimeZone.Name, "New_York");
             Assert.AreEqual(ts.TimeZone.TimeZoneInfo, tziNewYork);
 
