@@ -99,6 +99,7 @@ stages:
                   - task: NuGetToolInstaller@0
                     displayName: "Use latest NuGet"
                     continueOnError: false
+                  - task: NuGetAuthenticate@1
                   - task: NuGetCommand@2
                     displayName: "Release to feed"
                     inputs:
