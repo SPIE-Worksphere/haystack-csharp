@@ -88,7 +88,7 @@ stages:
           displayName: "Publish libraries to feed"
           environment: "NuGetFeed"
           pool:
-            vmImage: 'ubuntu-latest'
+            vmImage: 'windows-latest'
           workspace:
             clean: all
           strategy:
