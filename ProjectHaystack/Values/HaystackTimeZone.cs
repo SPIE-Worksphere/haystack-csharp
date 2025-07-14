@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Linq;
 using TimeZoneConverter;
+#if NET6_0_OR_GREATER
+#else
+using TimeZoneConverter;
+#endif
 
 namespace ProjectHaystack
 {
@@ -59,6 +63,30 @@ namespace ProjectHaystack
             }
 
             TimeZoneInfo tziFound = null;
+#if NET6_0_OR_GREATER
+            try
+            {
+                tziFound = TimeZoneInfo.FindSystemTimeZoneById(nameToSearch);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                tziFound = TimeZoneInfo.GetSystemTimeZones()
+                    .Where(tz => tz.StandardName.ToUpper().Contains(nameToSearch))
+                    .OrderBy(tz => tz.StandardName.Length)
+                    .FirstOrDefault();
+                if (tziFound == null)
+                {
+                    tziFound = TimeZoneInfo.GetSystemTimeZones()
+                        .Where(tz => tz.DisplayName.ToUpper().Contains(nameToSearch))
+                        .OrderBy(tz => tz.DisplayName.Length)
+                        .FirstOrDefault();
+                }
+                if (tziFound == null)
+                {
+                    throw new ArgumentException($"Could not find IANA timezone with name {name}", nameof(name));
+                }
+            }
+#else
             var bestMatch = TZConvert.KnownIanaTimeZoneNames
                 .Where(tzName => tzName.ToUpper().Contains(nameToSearch))
                 .OrderBy(tzName => tzName.Length)
@@ -71,6 +99,7 @@ namespace ProjectHaystack
             {
                 throw new ArgumentException($"An exception occurred when trying to convert from IANA to Windows Time Zone for value {tziFound}", nameof(name));
             }
+#endif
             return tziFound;
         }
 
@@ -81,6 +110,15 @@ namespace ProjectHaystack
                 throw new ArgumentException("Value must not be empty", nameof(dntzi));
             }
 
+#if NET6_0_OR_GREATER
+            if (!TimeZoneInfo.TryConvertWindowsIdToIanaId(dntzi.Id, out var iana))
+            {
+                if (!TimeZoneInfo.TryConvertWindowsIdToIanaId(dntzi.Id.Replace("Etc/", ""), out iana))
+                {
+                    throw new ArgumentException($"Windows time zone id {dntzi.Id} could not be converted to IANA tz id", nameof(dntzi));
+                }
+            }
+#else
             if (!TZConvert.TryWindowsToIana(dntzi.Id, out var iana))
             {
                 if (!TZConvert.TryWindowsToIana(dntzi.Id.Replace("Etc/", ""), out iana))
@@ -88,6 +126,7 @@ namespace ProjectHaystack
                     throw new ArgumentException($"Windows time zone id {dntzi.Id} could not be converted to IANA tz id", nameof(dntzi));
                 }
             }
+#endif
 
             var nameToSearch = iana.ToUpper();
             var bestMatch = HaystackTimeZoneDatabase.TimeZones

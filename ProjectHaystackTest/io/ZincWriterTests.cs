@@ -364,7 +364,11 @@ namespace ProjectHaystackTest.io
             TimeZoneInfo tziNewYork;
             try
             {
+#if NET6_0_OR_GREATER
+                tziNewYork = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+#else
                 tziNewYork = TimeZoneConverter.TZConvert.GetTimeZoneInfo("Eastern Standard Time");
+#endif
             }
             catch
             {

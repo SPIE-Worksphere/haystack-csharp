@@ -13,8 +13,5 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>haystack SCRAM client SkySpark</tags>
-    <dependencies>
-      <dependency id="TimeZoneConverter" version="7.0.0"/>
-    </dependencies>
   </metadata>
 </package>
