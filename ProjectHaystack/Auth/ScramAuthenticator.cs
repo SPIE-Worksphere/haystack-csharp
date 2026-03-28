@@ -1,4 +1,5 @@
-﻿using ProjectHaystack.Util;
+﻿using ProjectHaystack.Auth.Util;
+using ProjectHaystack.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,7 +67,7 @@ namespace ProjectHaystack.Auth
                     throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
                 }
 
-                _lastMessage = TokenToDict(auth.Substring(6));
+                _lastMessage = ScramSha256Helper.TokenToDict(auth.Substring(6));
             }
         }
 
@@ -76,7 +77,7 @@ namespace ProjectHaystack.Auth
 
             var message = new HttpRequestMessage(HttpMethod.Get, authUrl);
             message.Headers.Authorization = new AuthenticationHeaderValue("scram",
-               DictToToken(new Dictionary<string, string>
+               ScramSha256Helper.DictToToken(new Dictionary<string, string>
                {
                    ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(_gs2Header + _bare)).Trim('='),
                    ["handshakeToken"] = _lastMessage["handshakeToken"],
@@ -92,18 +93,18 @@ namespace ProjectHaystack.Auth
                 {
                     throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
                 }
-                _lastMessage = TokenToDict(auth.Substring(6));
+                _lastMessage = ScramSha256Helper.TokenToDict(auth.Substring(6));
             }
         }
 
         private async Task SendFinal(HttpClient client, Uri authUrl)
         {
             // Decode server-first-message
-            var s1_msg = Encoding.UTF8.GetString(FromBase64String(_lastMessage["data"]));
-            var data = TokenToDict(s1_msg);
+            var s1_msg = Encoding.UTF8.GetString(ScramSha256Helper.FromBase64String(_lastMessage["data"]));
+            var data = ScramSha256Helper.TokenToDict(s1_msg);
 
             // c2-no-proof
-            var c2_no_proof = DictToToken(new Dictionary<string, string>
+            var c2_no_proof = ScramSha256Helper.DictToToken(new Dictionary<string, string>
             {
                 ["c"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(_gs2Header)),
                 ["r"] = data["r"],
@@ -115,20 +116,14 @@ namespace ProjectHaystack.Auth
             var iterations = int.Parse(data["i"]);
             var authMsg = _bare + "," + s1_msg + "," + c2_no_proof;
 
-            var saltedPassword = Pbk(hash, _password, salt, iterations);
-            var clientProof = CreateClientProof(saltedPassword, Encoding.UTF8.GetBytes(authMsg));
-
-            // Apply legacy proof behavior if requested.
-            if (AddLegacySpaceToProof)
-            {
-                clientProof = " " + clientProof;
-            }
+            var saltedPassword = ScramSha256Helper.ComputeSaltedPassword(hash, _password, salt, iterations);
+            var clientProof = ScramSha256Helper.CreateClientProof(saltedPassword, Encoding.UTF8.GetBytes(authMsg), AddLegacySpaceToProof);
 
             var message = new HttpRequestMessage(HttpMethod.Get, authUrl);
             message.Headers.Authorization = new AuthenticationHeaderValue("scram",
-               DictToToken(new Dictionary<string, string>
+               ScramSha256Helper.DictToToken(new Dictionary<string, string>
                {
-                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p=" + clientProof)),
+                   ["data"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(c2_no_proof + ",p=" + clientProof)).Trim('='),
                    ["handshakeToken"] = _lastMessage["handshakeToken"],
                }));
             var response = await client.SendAsync(message);
@@ -141,17 +136,11 @@ namespace ProjectHaystack.Auth
             {
                 throw new InvalidOperationException($"Cannot get authentication header, server response was: {(int)response.StatusCode}");
             }
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", "authToken=" + TokenToDict(auth)["authToken"]);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", "authToken=" + ScramSha256Helper.TokenToDict(auth)["authToken"]);
             response.Dispose();
         }
 
-        private IDictionary<string, string> TokenToDict(string token) =>
-            token.Split(',')
-                .Select(s => s.Split(new[] { '=' }, 2).Select(v => v.Trim()).ToArray())
-                .ToDictionary(a => a[0], a => a.Count() > 1 ? a[1] : string.Empty);
 
-        private string DictToToken(IDictionary<string, string> dict) =>
-             string.Join(",", dict.Where(kv => kv.Value != null).Select(kv => $"{kv.Key}={kv.Value}"));
 
         /// <summary>
         /// Generate a random nonce string </summary>
@@ -165,53 +154,6 @@ namespace ProjectHaystack.Auth
                 .Where(chr => allowed.Contains(chr))
                 .Take(_clientNonceBytes)
                 .ToArray());
-        }
-
-        /// <summary>
-        /// Some haystack servers can trim = from base64, so we need to restore it.
-        /// Otherwise FromBase64String will throw exception.
-        /// </summary>
-        private static byte[] FromBase64String(string s)
-        {
-            if (!string.IsNullOrEmpty(s))
-            {
-                while ((s.Length * 6) % 8 != 0) s += "=";
-            }
-            return Convert.FromBase64String(s);
-        }
-
-        private static sbyte[] Pbk(string hash, string password, string salt, int iterations)
-        {
-            byte[] saltBytes = FromBase64String(salt);
-            using (var hmac = new HMACSHA256())
-            {
-                var mine = new Pbkdf2(hmac, Encoding.UTF8.GetBytes(password),
-                    saltBytes, iterations);
-                sbyte[] signed = mine.GetBytes(32);
-                byte[] signednew = (byte[])(Array)signed;
-                return signed;
-            }
-        }
-
-        private static string CreateClientProof(sbyte[] saltedPassword, byte[] authMsg)
-        {
-            using (var hmac = new HMACSHA256())
-            {
-                byte[] usSaltedPassword = (byte[])(Array)saltedPassword;
-                byte[] usAuthMsg = authMsg;
-                var hmac2 = new HMACSHA256(usSaltedPassword);
-                byte[] clientKey = hmac2.ComputeHash(Encoding.UTF8.GetBytes("Client Key"));
-                var sha1 = new SHA256Managed();
-                byte[] storedKey = sha1.ComputeHash(clientKey);
-                var hmac3 = new HMACSHA256((byte[])(Array)storedKey);
-                byte[] clientSig = hmac3.ComputeHash(authMsg);
-                byte[] clientProof = new byte[clientKey.Length];
-                for (int i = 0; i < clientKey.Length; i++)
-                {
-                    clientProof[i] = (byte)(clientKey[i] ^ clientSig[i]);
-                }
-                return Convert.ToBase64String(clientProof.Cast<byte>().ToArray());
-            }
         }
     }
 }

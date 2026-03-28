@@ -135,5 +135,40 @@ namespace ProjectHaystackTest.Client.Tests
             Assert.AreEqual(HttpMethod.Post, lastRequest.Method);
             Assert.AreEqual("/api/demo/ops", lastRequest.RequestUri.AbsolutePath);
         }
+
+        [TestMethod]
+        public async Task ScramAuthenticationTest_CorrectCredentials_ShouldPass()
+        {
+            var httpClient = new HttpClientMockBuilder(_uri)
+                .WithScramAuthentication(_user, _pass)
+                .Build();
+
+            var client = new HaystackClient(httpClient, new ScramAuthenticator(_user, _pass), _uri);
+            await client.OpenAsync();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task ScramAuthenticationTest_WrongUsername_ShouldFail()
+        {
+            var httpClient = new HttpClientMockBuilder(_uri)
+                .WithScramAuthentication(_user, _pass)
+                .Build();
+
+            var client = new HaystackClient(httpClient, new ScramAuthenticator("wrongUser", _pass), _uri);
+            await client.OpenAsync();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task ScramAuthenticationTest_WrongPassword_ShouldFail()
+        {
+            var httpClient = new HttpClientMockBuilder(_uri)
+                .WithScramAuthentication(_user, _pass)
+                .Build();
+
+            var client = new HaystackClient(httpClient, new ScramAuthenticator(_user, "wrongPass"), _uri);
+            await client.OpenAsync();
+        }
     }
 }
